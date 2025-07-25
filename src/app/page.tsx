@@ -20,12 +20,20 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 
+interface Job {
+  title: string;
+  company: string;
+  location: string;
+  salary: string;
+  tags: string[];
+}
+
 interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
   type?: "text" | "career-suggestion" | "job-card";
-  metadata?: any;
+  metadata?: { jobs: Job[] };
 }
 
 const initialMessages: Message[] = [
@@ -190,7 +198,7 @@ export default function ChatInterface() {
             ) : message.type === "job-card" ? (
               <div className="space-y-3">
                 <p className="mb-3 text-sm">{message.content}</p>
-                {message.metadata?.jobs?.map((job: any, index: number) => (
+                {message.metadata?.jobs?.map((job: Job, index: number) => (
                   <Card
                     key={index}
                     className="cursor-pointer border border-slate-700 bg-slate-900/50 py-0 transition-colors hover:border-blue-500"
