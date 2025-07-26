@@ -11,6 +11,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import Image from "next/image";
 
 const items = [
   {
@@ -96,11 +97,16 @@ const SidebarLogo = () => {
       {/* Glowing orb behind rocket */}
       <div className="absolute top-1/2 -left-2 h-16 w-16 -translate-y-1/2 animate-pulse rounded-full bg-gradient-to-r from-blue-500 to-purple-600 opacity-20 blur-xl"></div>
 
-      {/* Rocket emoji with subtle movement */}
-      <div className="relative z-10">
-        <span className="group-hover:-trans absolute -top-14 -left-10 text-[5rem] text-white/80 drop-shadow-[0_0_15px_rgba(255,255,255,0.3)] filter transition-all duration-300 group-hover:translate-x-1 group-hover:-translate-y-1 group-hover:text-white group-hover:drop-shadow-[0_0_25px_rgba(255,255,255,0.5)]">
-          🚀
-        </span>
+      {/* Rocket image with subtle movement */}
+      <div className="z-10">
+        <Image
+          src="/images/Rocket.png"
+          alt="rocket"
+          width={93}
+          height={93}
+          priority
+          className="group-hover:-trans absolute -top-4 -left-2 drop-shadow-[0_0_15px_rgba(255,255,255,0.3)] filter transition-all duration-300 group-hover:translate-x-1 group-hover:-translate-y-1 group-hover:text-white group-hover:drop-shadow-[0_0_25px_rgba(255,255,255,0.5)]"
+        />
       </div>
 
       {/* Modern typography */}
@@ -148,7 +154,7 @@ type SidebarUserCardProps = {
 
 const SidebarUserCard = ({ user }: SidebarUserCardProps) => {
   return (
-    <div className="flex cursor-pointer items-center gap-3 rounded-lg p-2 transition-colors hover:bg-slate-800">
+    <div className="flex cursor-pointer items-center gap-3 rounded-lg p-2 transition-colors hover:bg-slate-900">
       <Avatar className="h-8 w-8">
         <AvatarImage
           src={user.avatarUrl ?? "/placeholder.svg?height=32&width=32"}
