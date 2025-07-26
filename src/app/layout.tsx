@@ -29,10 +29,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geist.variable} ${playfair.variable}`}>
       <body>
-        <SidebarProvider>
-          <AppSidebar />
-          {children}
-        </SidebarProvider>
+        {/* <SidebarProvider> */}
+        {/* <AppSidebar /> */}
+        {children}
+        {/* </SidebarProvider> */}
       </body>
     </html>
   );
