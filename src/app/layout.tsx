@@ -2,9 +2,6 @@ import "@/styles/globals.css";
 import { type Metadata } from "next";
 import { Geist, Playfair_Display } from "next/font/google";
 
-import { AppSidebar } from "@/components/app-sidebar";
-import { SidebarProvider } from "@/components/ui/sidebar";
-
 export const metadata: Metadata = {
   title: "JobPilot - 🚀",
   description:
@@ -28,12 +25,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${geist.variable} ${playfair.variable}`}>
-      <body>
-        {/* <SidebarProvider> */}
-        {/* <AppSidebar /> */}
-        {children}
-        {/* </SidebarProvider> */}
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

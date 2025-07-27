@@ -1,4 +1,13 @@
-import { Home, Compass, Map, Bookmark, Settings, User } from "lucide-react";
+import {
+  Home,
+  Compass,
+  Map,
+  Bookmark,
+  Settings,
+  User,
+  LogOut,
+  ChevronUp,
+} from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -11,7 +20,22 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import Image from "next/image";
+import SidebarUserCard from "./ui/sidebar-usercard";
+
+type AppSidebarProps = {
+  user: {
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+  };
+};
 
 const items = [
   {
@@ -41,7 +65,7 @@ const items = [
   },
 ];
 
-export function AppSidebar() {
+export function AppSidebar({ user }: AppSidebarProps) {
   return (
     <Sidebar
       className="border-r border-slate-800 bg-slate-900"
@@ -62,9 +86,9 @@ export function AppSidebar() {
       <SidebarFooter className="border-t border-slate-800 bg-slate-900 p-4">
         <SidebarUserCard
           user={{
-            name: "tes-dev",
-            email: "test-dev@gmail.com",
-            avatarUrl: "/placeholder.svg?height=32&width=32",
+            name: user.name ?? "",
+            email: user.email ?? "",
+            avatarUrl: user.image ?? "",
           }}
         />
       </SidebarFooter>
@@ -141,34 +165,5 @@ const SidebarNavigationItems = () => {
         </SidebarMenuItem>
       ))}
     </SidebarMenu>
-  );
-};
-
-type SidebarUserCardProps = {
-  user: {
-    name: string;
-    email: string;
-    avatarUrl?: string;
-  };
-};
-
-const SidebarUserCard = ({ user }: SidebarUserCardProps) => {
-  return (
-    <div className="flex cursor-pointer items-center gap-3 rounded-lg p-2 transition-colors hover:bg-slate-900">
-      <Avatar className="h-8 w-8">
-        <AvatarImage
-          src={user.avatarUrl ?? "/placeholder.svg?height=32&width=32"}
-        />
-        <AvatarFallback className="border border-blue-800 bg-blue-900/50 text-blue-300">
-          <User className="h-4 w-4" />
-        </AvatarFallback>
-      </Avatar>
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-slate-100">
-          {user.name}
-        </p>
-        <p className="truncate text-xs text-slate-400">{user.email}</p>
-      </div>
-    </div>
   );
 };

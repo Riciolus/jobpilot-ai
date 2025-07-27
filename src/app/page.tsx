@@ -16,9 +16,9 @@ import {
   X,
   ChevronDown,
 } from "lucide-react";
-import { useState } from "react";
-import SplineCanvas from "@/components/spline-canvas";
 import Image from "next/image";
+import Link from "next/link";
+import { useState } from "react";
 
 const features = [
   {
@@ -66,12 +66,19 @@ export default function Home() {
 
       {/* Hero Section with Spline Background and Glow Effects */}
       <section className="relative h-screen w-full overflow-hidden bg-slate-950">
-        <SplineCanvas />
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="h-full w-full object-cover"
+        >
+          <source src="/videos/landing-page-bg.webm" type="video/webm" />
+        </video>
         {/* Glow Effects */}
         <div className="absolute inset-0 bg-gradient-to-b from-blue-900/20 via-purple-900/10 to-slate-950/80"></div>
         <div className="absolute top-1/4 left-1/4 h-96 w-96 animate-pulse rounded-full bg-blue-500/20 blur-3xl"></div>
         <div className="absolute top-1/3 right-1/4 h-80 w-80 animate-pulse rounded-full bg-purple-500/15 blur-3xl delay-1000"></div>
-
         {/* Hero Content Overlay */}
         <div className="pointer-events-none absolute inset-x-0 bottom-20 items-center">
           <div className="flex h-full items-center justify-center px-6">
@@ -309,7 +316,7 @@ const Navbar = () => {
               variant="ghost"
               className="text-slate-300 hover:bg-slate-800/50 hover:text-blue-400"
             >
-              Login
+              <Link href="/auth/login">Login</Link>
             </Button>
             <Button
               variant="outline"
@@ -318,7 +325,7 @@ const Navbar = () => {
               Support
             </Button>
             <Button className="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg ring-1 shadow-blue-600/25 ring-blue-500/20 hover:from-blue-700 hover:to-blue-800">
-              Get Started
+              <Link href="/auth/login">Get Started</Link>
             </Button>
           </div>
 
@@ -362,10 +369,10 @@ const Navbar = () => {
                   variant="outline"
                   className="border-slate-700 bg-transparent text-slate-300 hover:bg-blue-950/50"
                 >
-                  Login
+                  <Link href="/auth/login">Login</Link>
                 </Button>
                 <Button className="bg-blue-600 text-white hover:bg-blue-700">
-                  Get Started
+                  <Link href="/auth/login">Get Started</Link>
                 </Button>
               </div>
             </div>
