@@ -1,7 +1,6 @@
 "use client";
 
-import type React from "react";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import {
   Send,
   Mic,
@@ -18,8 +17,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 
 interface Job {
   title: string;

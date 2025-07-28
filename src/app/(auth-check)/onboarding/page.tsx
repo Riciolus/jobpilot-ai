@@ -37,6 +37,9 @@ interface FormData {
   growthAreas: string[];
 }
 
+// Define the possible form field types
+type FormValue = string | string[];
+
 const initialFormData: FormData = {
   fullName: "",
   age: "",
@@ -97,7 +100,7 @@ export default function OnboardingWizard() {
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [skillInput, setSkillInput] = useState("");
 
-  const updateFormData = (field: keyof FormData, value: any) => {
+  const updateFormData = (field: keyof FormData, value: FormValue) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -254,7 +257,7 @@ function PersonalBackgroundStep({
   updateFormData,
 }: {
   formData: FormData;
-  updateFormData: (field: keyof FormData, value: any) => void;
+  updateFormData: (field: keyof FormData, value: FormValue) => void;
 }) {
   return (
     <Card className="border-slate-800/30 bg-slate-950/10 shadow-xl shadow-black/10 backdrop-blur-sm">
@@ -265,7 +268,7 @@ function PersonalBackgroundStep({
               Personal Background
             </h2>
             <p className="text-lg text-slate-400">
-              Let's start with some basic information about you.
+              Let&apos;s start with some basic information about you.
             </p>
           </div>
 
@@ -359,7 +362,8 @@ function PersonalBackgroundStep({
                 />
               </div>
               <p className="text-sm text-slate-500">
-                We'll use this to show relevant job opportunities in your area.
+                We&apos;ll use this to show relevant job opportunities in your
+                area.
               </p>
             </div>
           </div>
@@ -379,7 +383,7 @@ function CareerSnapshotStep({
   removeSkill,
 }: {
   formData: FormData;
-  updateFormData: (field: keyof FormData, value: any) => void;
+  updateFormData: (field: keyof FormData, value: FormValue) => void;
   skillInput: string;
   setSkillInput: (value: string) => void;
   addSkill: (skill: string) => void;
@@ -532,7 +536,7 @@ function CareerGoalsStep({
   toggleGrowthArea,
 }: {
   formData: FormData;
-  updateFormData: (field: keyof FormData, value: any) => void;
+  updateFormData: (field: keyof FormData, value: FormValue) => void;
   toggleGrowthArea: (area: string) => void;
 }) {
   return (
@@ -591,8 +595,8 @@ function CareerGoalsStep({
                 Areas to Grow In
               </Label>
               <p className="text-sm text-slate-500">
-                Select all areas where you'd like to improve (you can select
-                multiple).
+                Select all areas where you&apos;d like to improve (you can
+                select multiple).
               </p>
               <div className="grid grid-cols-2 gap-3">
                 {growthAreaOptions.map((area) => (

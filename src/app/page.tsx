@@ -138,7 +138,7 @@ export default function Home() {
 
         <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-8">
           <div className="mb-16 text-center">
-            <h2 className="mb-6 bg-gradient-to-r from-white to-blue-200 bg-clip-text text-4xl font-bold text-transparent text-white md:text-5xl">
+            <h2 className="mb-6 bg-gradient-to-r from-white to-blue-200 bg-clip-text text-4xl font-bold text-white md:text-5xl">
               Supercharge Your Career
             </h2>
             <p className="mx-auto max-w-3xl text-xl text-slate-400">
@@ -177,7 +177,7 @@ export default function Home() {
         <div className="absolute top-1/2 left-1/2 h-96 w-96 -translate-x-1/2 -translate-y-1/2 transform animate-pulse rounded-full bg-blue-500/20 blur-3xl"></div>
 
         <div className="relative z-10 mx-auto max-w-4xl px-6 text-center lg:px-8">
-          <h2 className="mb-6 bg-gradient-to-r from-white via-blue-200 to-purple-200 bg-clip-text text-4xl font-bold text-transparent text-white md:text-5xl">
+          <h2 className="mb-6 bg-gradient-to-r from-white via-blue-200 to-purple-200 bg-clip-text text-4xl font-bold text-white md:text-5xl">
             Ready to Transform Your Career?
           </h2>
           <p className="mb-8 text-xl text-slate-300">
