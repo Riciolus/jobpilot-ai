@@ -17,36 +17,46 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, ArrowRight, MapPin, X } from "lucide-react";
+import { cn } from "@/lib/utils";
+import Link from "next/link";
+import Image from "next/image";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
-interface FormData {
-  // Step 1: Personal Background
+export interface UserProfileForm {
   fullName: string;
   age: string;
-  educationLevel: string;
+  educationLevel: "High School" | "D3" | "S1" | "S2";
   major: string;
   location: string;
 
-  // Step 2: Career Snapshot
-  currentStatus: string;
+  currentStatus: "Student" | "Fresh Graduate" | "Working" | "Career Switcher";
   pastJobs: string;
   skills: string[];
 
-  // Step 3: Career Goals
   desiredIndustry: string;
   targetRole: string;
   growthAreas: string[];
+
+  userId: string;
 }
 
 // Define the possible form field types
 type FormValue = string | string[];
 
-const initialFormData: FormData = {
+type SubmitProfileResponse = {
+  status: boolean;
+  message?: string;
+};
+
+const initialFormData: UserProfileForm = {
+  userId: "",
   fullName: "",
   age: "",
-  educationLevel: "",
+  educationLevel: "S1",
   major: "",
   location: "",
-  currentStatus: "",
+  currentStatus: "Student",
   pastJobs: "",
   skills: [],
   desiredIndustry: "",
@@ -97,10 +107,11 @@ const growthAreaOptions = [
 
 export default function OnboardingWizard() {
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState<FormData>(initialFormData);
+  const [formData, setFormData] = useState<UserProfileForm>(initialFormData);
   const [skillInput, setSkillInput] = useState("");
-
-  const updateFormData = (field: keyof FormData, value: FormValue) => {
+  const { data: session } = useSession();
+  const router = useRouter();
+  const updateFormData = (field: keyof UserProfileForm, value: FormValue) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -130,12 +141,39 @@ export default function OnboardingWizard() {
     }
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Handle form submission
-      console.log("Form submitted:", formData);
+      const dbPayload = {
+        ...formData,
+        userId: session?.user?.id,
+        age: parseInt(formData.age, 10),
+        skills: formData.skills,
+        growthAreas: formData.growthAreas,
+      };
+
+      const res = await fetch("/api/submit-profile", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(dbPayload),
+      });
+
+      if (!res.ok) {
+        // Optional: throw error or handle specific cases
+        const error = (await res.json()) as SubmitProfileResponse;
+
+        return;
+      }
+
+      const result = (await res.json()) as SubmitProfileResponse;
+
+      // Access returned fields
+      if (result.status === true) {
+        router.replace("/chat");
+      }
     }
   };
 
@@ -181,8 +219,8 @@ export default function OnboardingWizard() {
   return (
     <div className="relative min-h-screen overflow-hidden bg-slate-950">
       {/* Background Glow Effects */}
-      <div className="absolute top-1/4 left-1/4 h-96 w-96 animate-pulse rounded-full bg-blue-500/10 blur-3xl"></div>
-      <div className="absolute right-1/4 bottom-1/4 h-80 w-80 animate-pulse rounded-full bg-purple-500/8 blur-3xl delay-1000"></div>
+      <div className="absolute top-1/4 left-1/4 h-96 w-96 animate-pulse rounded-full bg-blue-500/20 blur-3xl"></div>
+      <div className="absolute right-1/4 bottom-1/4 h-80 w-80 animate-pulse rounded-full bg-purple-500/10 blur-3xl delay-1000"></div>
 
       <div className="relative z-10 flex min-h-screen flex-col">
         {/* Header */}
@@ -203,7 +241,21 @@ export default function OnboardingWizard() {
         </div> */}
 
         {/* Progress Bar */}
-        <div className="border-b border-slate-800/30 bg-slate-900/50">
+        <div
+          className={cn(
+            "border-b border-slate-800/30 bg-gradient-to-b to-slate-950/80",
+            currentStep === 1 && "from-red-300/10",
+            currentStep === 2 && "from-yellow-300/10",
+            currentStep === 3 && "from-green-300/10",
+          )}
+        >
+          <Link
+            href="/"
+            className="absolute top-6 left-6 z-10 flex items-center gap-2 text-slate-400 transition-colors hover:text-blue-400"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Home
+          </Link>
           <div className="mx-auto flex max-w-2xl flex-col gap-3 px-6 py-4">
             <div className="h-2 w-full rounded-full bg-slate-800/50">
               <div
@@ -224,14 +276,14 @@ export default function OnboardingWizard() {
         </div>
 
         {/* Navigation */}
-        <div className="border-t border-slate-800/50 bg-slate-900/80 backdrop-blur-xl">
+        <div className="border-t border-slate-800/50 bg-gradient-to-t from-fuchsia-950/10 to-slate-950/80 backdrop-blur-xl">
           <div className="mx-auto max-w-2xl px-6 py-6">
             <div className="flex justify-between">
               <Button
                 variant="outline"
                 onClick={handleBack}
                 disabled={currentStep === 1}
-                className="border-slate-700/50 bg-slate-800/30 text-slate-300 backdrop-blur-sm hover:bg-slate-800/50 disabled:opacity-50"
+                className="border-slate-700/50 bg-slate-800/30 text-slate-300 backdrop-blur-sm hover:bg-slate-800/50 hover:text-slate-200 disabled:opacity-50"
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back
@@ -256,8 +308,8 @@ function PersonalBackgroundStep({
   formData,
   updateFormData,
 }: {
-  formData: FormData;
-  updateFormData: (field: keyof FormData, value: FormValue) => void;
+  formData: UserProfileForm;
+  updateFormData: (field: keyof UserProfileForm, value: FormValue) => void;
 }) {
   return (
     <Card className="border-slate-800/30 bg-slate-950/10 shadow-xl shadow-black/10 backdrop-blur-sm">
@@ -267,9 +319,20 @@ function PersonalBackgroundStep({
             <h2 className="mb-3 text-3xl font-bold text-white">
               Personal Background
             </h2>
-            <p className="text-lg text-slate-400">
-              Let&apos;s start with some basic information about you.
-            </p>
+            <div className="flex items-center gap-3">
+              <Image
+                src="/images/people.png"
+                alt="people"
+                width={24}
+                height={24}
+                className="h-6 w-6"
+              />
+              <span className="text-lg font-medium">
+                <p className="text-slate-400">
+                  Let&apos;s start with some basic information about you.
+                </p>
+              </span>
+            </div>
           </div>
 
           <div className="space-y-8">
@@ -312,9 +375,10 @@ function PersonalBackgroundStep({
               </Label>
               <Select
                 value={formData.educationLevel}
-                onValueChange={(value) =>
-                  updateFormData("educationLevel", value)
-                }
+                onValueChange={(value) => {
+                  const formatted = value.toUpperCase();
+                  updateFormData("educationLevel", formatted);
+                }}
               >
                 <SelectTrigger className="h-12 border-slate-700/50 bg-slate-800/50 text-base text-slate-100 focus:border-blue-500 focus:ring-blue-500/20">
                   <SelectValue placeholder="Select your education level" />
@@ -382,8 +446,8 @@ function CareerSnapshotStep({
   addSkill,
   removeSkill,
 }: {
-  formData: FormData;
-  updateFormData: (field: keyof FormData, value: FormValue) => void;
+  formData: UserProfileForm;
+  updateFormData: (field: keyof UserProfileForm, value: FormValue) => void;
   skillInput: string;
   setSkillInput: (value: string) => void;
   addSkill: (skill: string) => void;
@@ -397,9 +461,21 @@ function CareerSnapshotStep({
             <h2 className="mb-3 text-3xl font-bold text-white">
               Career Snapshot
             </h2>
-            <p className="text-lg text-slate-400">
-              Tell us about your current situation and experience.
-            </p>
+
+            <div className="flex items-center gap-3">
+              <Image
+                src="/images/saluting.png"
+                alt="people"
+                width={24}
+                height={24}
+                className="h-6 w-6"
+              />
+              <span className="text-lg font-medium">
+                <p className="text-slate-400">
+                  Tell us about your current situation and experience.
+                </p>
+              </span>
+            </div>
           </div>
 
           <div className="space-y-8">
@@ -535,8 +611,8 @@ function CareerGoalsStep({
   updateFormData,
   toggleGrowthArea,
 }: {
-  formData: FormData;
-  updateFormData: (field: keyof FormData, value: FormValue) => void;
+  formData: UserProfileForm;
+  updateFormData: (field: keyof UserProfileForm, value: FormValue) => void;
   toggleGrowthArea: (area: string) => void;
 }) {
   return (
@@ -545,9 +621,20 @@ function CareerGoalsStep({
         <div className="space-y-8">
           <div>
             <h2 className="mb-3 text-3xl font-bold text-white">Career Goals</h2>
-            <p className="text-lg text-slate-400">
-              Help us understand where you want to go in your career.
-            </p>
+            <div className="flex items-center gap-3">
+              <Image
+                src="/images/smile.png"
+                alt="people"
+                width={24}
+                height={24}
+                className="h-6 w-6"
+              />
+              <span className="text-lg font-medium">
+                <p className="text-slate-400">
+                  Help us understand where you want to go in your career.
+                </p>
+              </span>
+            </div>
           </div>
 
           <div className="space-y-8">
