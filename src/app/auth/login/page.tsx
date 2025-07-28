@@ -65,7 +65,7 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <CardTitle className="bg-gradient-to-r from-white to-blue-200 bg-clip-text text-2xl font-bold text-transparent text-white">
+            <CardTitle className="bg-gradient-to-r from-white to-blue-200 bg-clip-text text-2xl font-bold text-white">
               Welcome back
             </CardTitle>
             <CardDescription className="mt-2 text-slate-400">

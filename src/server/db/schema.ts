@@ -1,35 +1,23 @@
 import { relations, sql } from "drizzle-orm";
-import { index, pgTableCreator, primaryKey } from "drizzle-orm/pg-core";
+import { index, pgEnum, pgTableCreator, primaryKey } from "drizzle-orm/pg-core";
 import { type AdapterAccount } from "next-auth/adapters";
 
-/**
- * This is an example of how to use the multi-project schema feature of Drizzle ORM. Use the same
- * database instance for multiple projects.
- *
- * @see https://orm.drizzle.team/docs/goodies#multi-project-schema
- */
 export const createTable = pgTableCreator((name) => `jobpilot-ai_${name}`);
+export const senderEnum = pgEnum("sender", ["user", "assistant"]);
 
-export const posts = createTable(
-  "post",
-  (d) => ({
-    id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
-    name: d.varchar({ length: 256 }),
-    createdById: d
-      .varchar({ length: 255 })
-      .notNull()
-      .references(() => users.id),
-    createdAt: d
-      .timestamp({ withTimezone: true })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-    updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
-  }),
-  (t) => [
-    index("created_by_idx").on(t.createdById),
-    index("name_idx").on(t.name),
-  ],
-);
+export const educationLevelEnum = pgEnum("education_level", [
+  "High School",
+  "D3",
+  "S1",
+  "S2",
+]);
+
+export const careerStatusEnum = pgEnum("career_status", [
+  "Fresh Graduate",
+  "Student",
+  "Working",
+  "Career Switcher",
+]);
 
 export const users = createTable("user", (d) => ({
   id: d
@@ -46,6 +34,8 @@ export const users = createTable("user", (d) => ({
     })
     .default(sql`CURRENT_TIMESTAMP`),
   image: d.varchar({ length: 255 }),
+
+  isOnboardingComplete: d.boolean().default(false),
 }));
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -106,3 +96,75 @@ export const verificationTokens = createTable(
   }),
   (t) => [primaryKey({ columns: [t.identifier, t.token] })],
 );
+
+// FEATURES
+
+export const userProfiles = createTable("user_profile", (d) => ({
+  userId: d
+    .varchar({ length: 255 })
+    .primaryKey()
+    .references(() => users.id),
+
+  fullName: d.varchar({ length: 255 }),
+  age: d.integer(),
+  educationLevel: educationLevelEnum("educationLevelEnum").notNull(),
+  major: d.varchar({ length: 255 }),
+  location: d.varchar({ length: 255 }),
+
+  currentStatus: careerStatusEnum("careerStatusEnum").notNull(),
+  pastJobs: d.text(),
+  skills: d.text(),
+
+  desiredIndustry: d.varchar({ length: 255 }),
+  targetRole: d.varchar({ length: 255 }),
+  growthAreas: d.text(),
+
+  createdAt: d.timestamp({ withTimezone: true }).defaultNow().notNull(),
+  updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
+}));
+
+export const conversations = createTable("conversation", (d) => ({
+  id: d
+    .varchar({ length: 255 })
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: d
+    .varchar({ length: 255 })
+    .notNull()
+    .references(() => users.id),
+  title: d.varchar({ length: 255 }).notNull(),
+  createdAt: d.timestamp({ withTimezone: true }).defaultNow().notNull(),
+  updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
+}));
+
+export const messages = createTable("message", (d) => ({
+  id: d
+    .varchar({ length: 255 })
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  conversationId: d
+    .varchar({ length: 255 })
+    .notNull()
+    .references(() => conversations.id),
+  sender: senderEnum("sender").notNull(),
+  content: d.text().notNull(),
+  createdAt: d.timestamp({ withTimezone: true }).defaultNow().notNull(),
+}));
+
+export const conversationsRelations = relations(
+  conversations,
+  ({ one, many }) => ({
+    user: one(users, {
+      fields: [conversations.userId],
+      references: [users.id],
+    }),
+    messages: many(messages),
+  }),
+);
+
+export const messagesRelations = relations(messages, ({ one }) => ({
+  conversation: one(conversations, {
+    fields: [messages.conversationId],
+    references: [conversations.id],
+  }),
+}));

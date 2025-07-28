@@ -1,4 +1,5 @@
 import "@/styles/globals.css";
+
 import { type Metadata } from "next";
 import { Geist, Playfair_Display } from "next/font/google";
 

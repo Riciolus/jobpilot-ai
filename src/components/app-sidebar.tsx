@@ -1,13 +1,4 @@
-import {
-  Home,
-  Compass,
-  Map,
-  Bookmark,
-  Settings,
-  User,
-  LogOut,
-  ChevronUp,
-} from "lucide-react";
+import { Home, Compass, Map, Bookmark, Settings } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -19,13 +10,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+
 import Image from "next/image";
 import SidebarUserCard from "./ui/sidebar-usercard";
 

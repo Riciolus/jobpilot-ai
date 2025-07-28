@@ -105,13 +105,15 @@ export default function Home() {
               </p>
 
               <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-                <Button
-                  size="lg"
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-4 text-lg text-white shadow-2xl ring-1 shadow-blue-600/40 ring-blue-500/30 transition-all duration-300 hover:from-blue-700 hover:to-purple-700 hover:shadow-blue-600/60 hover:ring-blue-400/50"
-                >
-                  Start Your Journey
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
+                <Link href="/auth/register">
+                  <Button
+                    size="lg"
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-4 text-lg text-white shadow-2xl ring-1 shadow-blue-600/40 ring-blue-500/30 transition-all duration-300 hover:from-blue-700 hover:to-purple-700 hover:shadow-blue-600/60 hover:ring-blue-400/50"
+                  >
+                    Start Your Journey
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </Link>
                 <Button
                   size="lg"
                   variant="outline"
