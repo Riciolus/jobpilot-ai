@@ -3,18 +3,28 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { auth } from "@/server/auth";
 import { redirect } from "next/navigation";
 
+type ExtendedUser = {
+  id: string;
+  name?: string;
+  email?: string;
+  image?: string;
+  isOnboardingComplete: boolean;
+};
+
 export default async function Layout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const session = await auth();
 
-  if (session!.user.isOnboardingComplete === false) {
+  const user = session?.user as ExtendedUser;
+
+  if (!user.isOnboardingComplete) {
     redirect("/onboarding");
   }
 
   return (
     <SidebarProvider>
-      <AppSidebar user={session!.user} />
+      <AppSidebar user={user} />
       {children}
     </SidebarProvider>
   );

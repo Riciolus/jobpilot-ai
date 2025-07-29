@@ -161,18 +161,10 @@ export default function OnboardingWizard() {
         body: JSON.stringify(dbPayload),
       });
 
-      if (!res.ok) {
-        // Optional: throw error or handle specific cases
-        const error = (await res.json()) as SubmitProfileResponse;
-
-        return;
-      }
-
       const result = (await res.json()) as SubmitProfileResponse;
 
-      // Access returned fields
       if (result.status === true) {
-        router.replace("/chat");
+        router.replace("/loading");
       }
     }
   };

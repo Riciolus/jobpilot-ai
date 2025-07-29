@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Send,
   Mic,
@@ -17,6 +17,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import { fetchOrCreateConversation } from "@/lib/utils";
 
 interface Job {
   title: string;
@@ -26,7 +27,7 @@ interface Job {
   tags: string[];
 }
 
-interface Message {
+export interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
@@ -34,66 +35,42 @@ interface Message {
   metadata?: { jobs: Job[] };
 }
 
-const initialMessages: Message[] = [
-  {
-    id: "1",
-    role: "assistant",
-    content:
-      "Hello! I'm your PathCoPilot AI assistant. I'm here to help you navigate your career journey. What would you like to explore today?",
-    type: "text",
-  },
-  {
-    id: "2",
-    role: "user",
-    content:
-      "I'm interested in transitioning from marketing to data science. What skills should I focus on?",
-    type: "text",
-  },
-  {
-    id: "3",
-    role: "assistant",
-    content:
-      "Great choice! Data science is a growing field with excellent opportunities. Here are the key skills you should focus on for your transition:",
-    type: "text",
-  },
-  {
-    id: "4",
-    role: "assistant",
-    content:
-      "• **Programming Languages**: Python and R are essential\n• **Statistics & Mathematics**: Linear algebra, probability, hypothesis testing\n• **Data Manipulation**: SQL, pandas, data cleaning techniques\n• **Machine Learning**: Supervised/unsupervised learning algorithms\n• **Data Visualization**: Tableau, matplotlib, seaborn\n• **Business Acumen**: Your marketing background is actually an advantage here!",
-    type: "career-suggestion",
-  },
-  {
-    id: "5",
-    role: "assistant",
-    content: "I found some relevant opportunities that might interest you:",
-    type: "job-card",
-    metadata: {
-      jobs: [
-        {
-          title: "Junior Data Analyst",
-          company: "TechCorp Inc.",
-          location: "San Francisco, CA",
-          salary: "$75,000 - $95,000",
-          tags: ["Python", "SQL", "Marketing Analytics"],
-        },
-        {
-          title: "Marketing Data Scientist",
-          company: "Growth Labs",
-          location: "Remote",
-          salary: "$90,000 - $120,000",
-          tags: ["Python", "A/B Testing", "Customer Analytics"],
-        },
-      ],
-    },
-  },
-];
-
 export default function ChatInterface() {
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    void (async () => {
+      try {
+        const id = await fetchOrCreateConversation();
+        setConversationId(id);
+        console.log("from function", id);
+      } catch (err) {
+        console.error("Failed to get conversation:", err);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    void (async () => {
+      console.log(conversationId);
+      if (!conversationId) return;
+
+      try {
+        const res = await fetch(
+          `/api/messages?conversationId=${conversationId}`,
+        );
+        const data = (await res.json()) as Message[];
+        setMessages(data);
+        console.log(data);
+      } catch (err) {
+        console.error("Failed to fetch messages:", err);
+      }
+    });
+  }, [conversationId]);
 
   const handleSend = () => {
     if (!input.trim()) return;

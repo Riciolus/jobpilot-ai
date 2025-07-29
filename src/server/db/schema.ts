@@ -3,7 +3,8 @@ import { index, pgEnum, pgTableCreator, primaryKey } from "drizzle-orm/pg-core";
 import { type AdapterAccount } from "next-auth/adapters";
 
 export const createTable = pgTableCreator((name) => `jobpilot-ai_${name}`);
-export const senderEnum = pgEnum("sender", ["user", "assistant"]);
+export const roleEnum = pgEnum("role", ["user", "assistant"]);
+export const typeEnum = pgEnum("type", ["text", "job-card"]);
 
 export const educationLevelEnum = pgEnum("education_level", [
   "High School",
@@ -119,6 +120,7 @@ export const userProfiles = createTable("user_profile", (d) => ({
   targetRole: d.varchar({ length: 255 }),
   growthAreas: d.text(),
 
+  chatInitiated: d.boolean().default(false),
   createdAt: d.timestamp({ withTimezone: true }).defaultNow().notNull(),
   updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
 }));
@@ -146,7 +148,8 @@ export const messages = createTable("message", (d) => ({
     .varchar({ length: 255 })
     .notNull()
     .references(() => conversations.id),
-  sender: senderEnum("sender").notNull(),
+  role: roleEnum("role").notNull(),
+  type: typeEnum("type").notNull(),
   content: d.text().notNull(),
   createdAt: d.timestamp({ withTimezone: true }).defaultNow().notNull(),
 }));
