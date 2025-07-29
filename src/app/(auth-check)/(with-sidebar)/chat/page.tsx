@@ -11,6 +11,10 @@ import {
   MapPin,
   DollarSign,
   Brain,
+  Search,
+  TrendingUp,
+  BarChart3,
+  RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -35,6 +39,25 @@ export interface Message {
   metadata?: { jobs: Job[] };
 }
 
+const suggestions = [
+  {
+    text: "Search me a job that suits me",
+    icon: Search,
+  },
+  {
+    text: "What skills should I learn next?",
+    icon: TrendingUp,
+  },
+  {
+    text: "Show me my career growth",
+    icon: BarChart3,
+  },
+  {
+    text: "I want to switch industries",
+    icon: RefreshCw,
+  },
+];
+
 export default function ChatInterface() {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -47,16 +70,14 @@ export default function ChatInterface() {
       try {
         const id = await fetchOrCreateConversation();
         setConversationId(id);
-        console.log("from function", id);
       } catch (err) {
         console.error("Failed to get conversation:", err);
       }
-    })();
+    })(); // ← this is correct
   }, []);
 
   useEffect(() => {
     void (async () => {
-      console.log(conversationId);
       if (!conversationId) return;
 
       try {
@@ -65,11 +86,11 @@ export default function ChatInterface() {
         );
         const data = (await res.json()) as Message[];
         setMessages(data);
-        console.log(data);
+        console.log("Messages fetched:", data);
       } catch (err) {
         console.error("Failed to fetch messages:", err);
       }
-    });
+    })();
   }, [conversationId]);
 
   const handleSend = () => {
@@ -235,6 +256,44 @@ export default function ChatInterface() {
           <div className="-bottom-36 flex flex-1 justify-center overflow-y-auto px-6 py-6">
             <div className="w-full max-w-5xl">
               {messages.map(renderMessage)}
+
+              <div className="mb-6 flex justify-end gap-3">
+                <div className="order-first max-w-[80%]">
+                  <Card className="group rounded-2xl border border-slate-700/50 bg-slate-900/60 p-0 text-white shadow-sm ring-1 shadow-blue-600/30 ring-blue-900/10 backdrop-blur-sm transition-all duration-300 hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-600/20">
+                    <div className="space-y-3">
+                      <CardContent className="relative p-3">
+                        <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+
+                        <div className="items-star relative z-10 mb-3 flex justify-between text-sm">
+                          <h4 className="flex items-center gap-2 font-semibold text-slate-100">
+                            Try asking :
+                          </h4>
+                        </div>
+
+                        <div className="relative z-10 flex flex-col flex-wrap gap-2">
+                          {suggestions.map((suggestion, index) => (
+                            <Badge
+                              key={index}
+                              className="flex cursor-pointer gap-3 border-blue-800/40 bg-blue-900/30 px-2 py-1 text-sm font-normal text-blue-300 shadow-sm backdrop-blur-sm hover:bg-blue-800/50"
+                            >
+                              <suggestion.icon className="h-4 w-4 text-blue-400 drop-shadow-sm" />
+
+                              {suggestion.text}
+                            </Badge>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </div>
+                  </Card>
+                </div>
+
+                <Avatar className="mt-1 h-8 w-8 shadow-lg ring-1 shadow-blue-600/20 ring-blue-500/30">
+                  <AvatarFallback className="bg-gradient-to-br from-blue-600 to-blue-700 text-white">
+                    <User className="h-4 w-4" />
+                  </AvatarFallback>
+                </Avatar>
+              </div>
+
               {isTyping && (
                 <div className="mb-6 flex gap-3">
                   <Avatar className="mt-1 h-8 w-8 shadow-lg ring-1 shadow-blue-600/20 ring-blue-500/20">

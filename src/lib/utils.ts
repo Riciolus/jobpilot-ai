@@ -24,7 +24,6 @@ export async function fetchOrCreateConversation(): Promise<string> {
   }
 
   const data = (await res.json()) as initResponse;
-  console.log(data);
 
   convId = data.conversationId;
 
