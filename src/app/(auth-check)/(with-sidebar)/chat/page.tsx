@@ -15,6 +15,7 @@ import {
   TrendingUp,
   BarChart3,
   RefreshCw,
+  HelpCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -32,10 +33,11 @@ interface Job {
 }
 
 export interface Message {
-  id: string;
+  id?: string;
   role: "user" | "assistant";
   content: string;
   type?: "text" | "career-suggestion" | "job-card";
+  conversationId: string;
   metadata?: { jobs: Job[] };
 }
 
@@ -59,10 +61,11 @@ const suggestions = [
 ];
 
 export default function ChatInterface() {
-  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [conversationId, setConversationId] = useState<string>("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [loading, setLoading] = useState(true);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -73,7 +76,7 @@ export default function ChatInterface() {
       } catch (err) {
         console.error("Failed to get conversation:", err);
       }
-    })(); // ← this is correct
+    })();
   }, []);
 
   useEffect(() => {
@@ -86,48 +89,89 @@ export default function ChatInterface() {
         );
         const data = (await res.json()) as Message[];
         setMessages(data);
-        console.log("Messages fetched:", data);
       } catch (err) {
         console.error("Failed to fetch messages:", err);
+      } finally {
+        setLoading(false);
       }
     })();
   }, [conversationId]);
 
-  const handleSend = () => {
-    if (!input.trim()) return;
+  const handleSend = async (messageInput?: string) => {
+    const currentInput = messageInput ?? input;
+
+    if (!currentInput.trim()) return;
 
     const userMessage: Message = {
-      id: Date.now().toString(),
       role: "user",
-      content: input,
+      content: currentInput,
       type: "text",
+      conversationId,
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    const assistantMessage: Message = {
+      role: "assistant",
+      content: "",
+      type: "text",
+      conversationId,
+    };
+
+    setMessages((prev) => [...prev, userMessage, assistantMessage]);
     setInput("");
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
     }
 
     setIsTyping(true);
-    // Simulate AI response
-    setTimeout(() => {
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content:
-          "That's a great question! Let me help you with that. Based on your background and goals, I'd recommend focusing on building a strong foundation in data analysis first, then gradually moving into more advanced machine learning concepts.",
-        type: "text",
-      };
-      setMessages((prev) => [...prev, aiMessage]);
-      setIsTyping(false);
-    }, 2000);
+
+    try {
+      const res = await fetch(`/api/messages`, {
+        method: "POST",
+        body: JSON.stringify(userMessage),
+      });
+
+      if (!res.ok) {
+        setMessages((prev) => prev.filter((msg) => msg.id !== userMessage.id));
+        throw new Error("Denied");
+      }
+
+      setIsTyping(() => false);
+
+      const reader = res?.body?.getReader();
+      if (!reader) throw new Error("Response body is null");
+
+      const decoder = new TextDecoder("utf-8");
+      let fullText = "";
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+        fullText += chunk;
+
+        // Step 2: Update assistant message content as it streams in
+        setMessages((prev) => {
+          const updated = [...prev];
+          const lastIndex = updated.length - 1;
+
+          updated[lastIndex] = {
+            ...updated[lastIndex]!,
+            content: fullText,
+          };
+
+          return updated;
+        });
+      }
+    } catch (err) {
+      console.error("Failed to create messages:", err);
+    }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyPress = async (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSend();
+      await handleSend();
     }
   };
 
@@ -165,7 +209,7 @@ export default function ChatInterface() {
             {message.type === "career-suggestion" ? (
               <div className="space-y-2">
                 {message.content.split("\n").map((line, index) => (
-                  <div key={index} className="text-sm">
+                  <div key={`${index}-${line}`} className="text-sm">
                     {line.startsWith("•") ? (
                       <div className="flex items-start gap-2">
                         <span className="font-bold text-blue-400 drop-shadow-sm">
@@ -253,72 +297,76 @@ export default function ChatInterface() {
           <BetaBanner />
 
           {/* Chat Messages */}
-          <div className="-bottom-36 flex flex-1 justify-center overflow-y-auto px-6 py-6">
-            <div className="w-full max-w-5xl">
-              {messages.map(renderMessage)}
+          {!loading ? (
+            <div className="-bottom-36 flex flex-1 justify-center overflow-y-auto px-6 py-6">
+              <div className="w-full max-w-5xl">
+                {messages.map(renderMessage)}
 
-              <div className="mb-6 flex justify-end gap-3">
-                <div className="order-first max-w-[80%]">
-                  <Card className="group rounded-2xl border border-slate-700/50 bg-slate-900/60 p-0 text-white shadow-sm ring-1 shadow-blue-600/30 ring-blue-900/10 backdrop-blur-sm transition-all duration-300 hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-600/20">
-                    <div className="space-y-3">
-                      <CardContent className="relative p-3">
-                        <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+                <div className="mt-12 mb-6 flex justify-end gap-3">
+                  <div className="order-first max-w-[80%] opacity-80 hover:opacity-100">
+                    <Card className="group rounded-2xl border border-slate-700/50 bg-slate-900/60 p-0 text-white shadow-sm ring-1 shadow-blue-600/30 ring-blue-900/10 backdrop-blur-sm transition-all duration-300 hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-600/20">
+                      <div className="space-y-3">
+                        <CardContent className="relative p-3">
+                          <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
 
-                        <div className="items-star relative z-10 mb-3 flex justify-between text-sm">
-                          <h4 className="flex items-center gap-2 font-semibold text-slate-100">
-                            Try asking :
-                          </h4>
-                        </div>
+                          <div className="items-star relative z-10 mb-3 flex justify-between text-sm">
+                            <h4 className="flex items-center gap-2 font-semibold text-slate-100">
+                              Try asking :
+                            </h4>
+                          </div>
 
-                        <div className="relative z-10 flex flex-col flex-wrap gap-2">
-                          {suggestions.map((suggestion, index) => (
-                            <Badge
-                              key={index}
-                              className="flex cursor-pointer gap-3 border-blue-800/40 bg-blue-900/30 px-2 py-1 text-sm font-normal text-blue-300 shadow-sm backdrop-blur-sm hover:bg-blue-800/50"
-                            >
-                              <suggestion.icon className="h-4 w-4 text-blue-400 drop-shadow-sm" />
+                          <div className="relative z-10 flex flex-col flex-wrap gap-2">
+                            {suggestions.map((suggestion, index) => (
+                              <Badge
+                                key={index}
+                                onClick={() => handleSend(suggestion.text)}
+                                className="flex cursor-pointer gap-3 border-blue-800/40 bg-blue-900/30 px-2 py-1 text-sm font-normal text-blue-300 shadow-sm backdrop-blur-sm hover:bg-blue-800/50"
+                              >
+                                <suggestion.icon className="h-4 w-4 text-blue-400 drop-shadow-sm" />
 
-                              {suggestion.text}
-                            </Badge>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </div>
-                  </Card>
-                </div>
+                                {suggestion.text}
+                              </Badge>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </div>
+                    </Card>
+                  </div>
 
-                <Avatar className="mt-1 h-8 w-8 shadow-lg ring-1 shadow-blue-600/20 ring-blue-500/30">
-                  <AvatarFallback className="bg-gradient-to-br from-blue-600 to-blue-700 text-white">
-                    <User className="h-4 w-4" />
-                  </AvatarFallback>
-                </Avatar>
-              </div>
-
-              {isTyping && (
-                <div className="mb-6 flex gap-3">
-                  <Avatar className="mt-1 h-8 w-8 shadow-lg ring-1 shadow-blue-600/20 ring-blue-500/20">
-                    <AvatarFallback className="border border-blue-800/50 bg-gradient-to-br from-blue-900/80 to-blue-800/60 text-blue-300 backdrop-blur-sm">
-                      <Bot className="h-4 w-4" />
+                  <Avatar className="mt-1 h-8 w-8 shadow-lg ring-1 shadow-blue-600/20 ring-blue-500/30">
+                    <AvatarFallback className="bg-gradient-to-br from-teal-500 to-teal-800 text-white">
+                      <HelpCircle className="h-4 w-4" />
                     </AvatarFallback>
                   </Avatar>
-                  <div className="rounded-2xl border border-slate-700/50 bg-slate-800/80 px-4 py-3 shadow-lg shadow-black/20 backdrop-blur-sm">
-                    <div className="flex space-x-1">
-                      <div className="h-2 w-2 animate-bounce rounded-full bg-blue-400 shadow-sm shadow-blue-400/50"></div>
-                      <div
-                        className="h-2 w-2 animate-bounce rounded-full bg-blue-400 shadow-sm shadow-blue-400/50"
-                        style={{ animationDelay: "0.1s" }}
-                      ></div>
-                      <div
-                        className="h-2 w-2 animate-bounce rounded-full bg-blue-400 shadow-sm shadow-blue-400/50"
-                        style={{ animationDelay: "0.2s" }}
-                      ></div>
+                </div>
+
+                {isTyping && (
+                  <div className="mb-6 flex gap-3">
+                    <Avatar className="mt-1 h-8 w-8 shadow-lg ring-1 shadow-blue-600/20 ring-blue-500/20">
+                      <AvatarFallback className="border border-blue-800/50 bg-gradient-to-br from-blue-900/80 to-blue-800/60 text-blue-300 backdrop-blur-sm">
+                        <Bot className="h-4 w-4" />
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="rounded-2xl border border-slate-700/50 bg-slate-800/80 px-4 py-3 shadow-lg shadow-black/20 backdrop-blur-sm">
+                      <div className="flex space-x-1">
+                        <div className="h-2 w-2 animate-bounce rounded-full bg-blue-400 shadow-sm shadow-blue-400/50"></div>
+                        <div
+                          className="h-2 w-2 animate-bounce rounded-full bg-blue-400 shadow-sm shadow-blue-400/50"
+                          style={{ animationDelay: "0.1s" }}
+                        ></div>
+                        <div
+                          className="h-2 w-2 animate-bounce rounded-full bg-blue-400 shadow-sm shadow-blue-400/50"
+                          style={{ animationDelay: "0.2s" }}
+                        ></div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
-          </div>
-
+          ) : (
+            <div className="h-full bg-slate-950"></div>
+          )}
           {/* Input Area */}
           <div className="relative">
             <div className="animate-pin absolute -bottom-36 left-1/4 h-56 w-96 animate-pulse rounded-full bg-fuchsia-400/30 blur-3xl"></div>
@@ -356,7 +404,7 @@ export default function ChatInterface() {
                       </div>
                     </div>
                     <Button
-                      onClick={handleSend}
+                      onClick={() => handleSend}
                       disabled={!input.trim() || isTyping}
                       className="rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-3 text-white shadow-lg ring-1 shadow-blue-600/30 ring-blue-500/20 transition-all duration-300 hover:from-blue-700 hover:to-blue-800 hover:ring-blue-400/30"
                     >

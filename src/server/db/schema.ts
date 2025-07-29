@@ -4,7 +4,11 @@ import { type AdapterAccount } from "next-auth/adapters";
 
 export const createTable = pgTableCreator((name) => `jobpilot-ai_${name}`);
 export const roleEnum = pgEnum("role", ["user", "assistant"]);
-export const typeEnum = pgEnum("type", ["text", "job-card"]);
+export const typeEnum = pgEnum("type", [
+  "text",
+  "job-card",
+  "career-suggestion",
+]);
 
 export const educationLevelEnum = pgEnum("education_level", [
   "High School",
