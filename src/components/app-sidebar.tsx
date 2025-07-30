@@ -1,4 +1,4 @@
-import { Home, Compass, Map, Bookmark, Settings } from "lucide-react";
+import { Compass, Map, Bookmark, Settings, MessageCircle } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -24,9 +24,9 @@ type AppSidebarProps = {
 
 const items = [
   {
-    title: "Dashboard",
+    title: "Chat",
     url: "#",
-    icon: Home,
+    icon: MessageCircle,
   },
   {
     title: "Explore Careers",
@@ -120,7 +120,7 @@ const SidebarLogo = () => {
 
       {/* Modern typography */}
       <div className="relative z-10 ml-12">
-        <h1 className="font-playfair text-xl font-bold tracking-wide text-white/90 transition-all duration-300 group-hover:text-white">
+        <h1 className="text-xl font-bold tracking-wide text-white/90 transition-all duration-300 group-hover:text-white">
           Job Pilot
         </h1>
       </div>

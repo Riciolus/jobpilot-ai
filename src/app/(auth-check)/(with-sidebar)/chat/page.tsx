@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import {
+  Fragment,
+  useEffect,
+  useRef,
+  useState,
+  type ComponentProps,
+} from "react";
 import {
   Send,
   Mic,
@@ -23,6 +29,8 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { fetchOrCreateConversation } from "@/lib/utils";
+import ReactMarkdown, { type Components } from "react-markdown";
+import Link from "next/link";
 
 interface Job {
   title: string;
@@ -40,6 +48,10 @@ export interface Message {
   conversationId: string;
   metadata?: { jobs: Job[] };
 }
+
+type ReactMarkdownProps = ComponentProps<typeof ReactMarkdown> & {
+  className?: string;
+};
 
 const suggestions = [
   {
@@ -60,21 +72,70 @@ const suggestions = [
   },
 ];
 
+const Markdown = ({ className, ...props }: ReactMarkdownProps) => (
+  <div className={className}>
+    <ReactMarkdown {...props} />
+  </div>
+);
+
+const MarkdownComponents: Components = {
+  p: ({ children }) => <p className="mb-4">{children}</p>,
+  strong: ({ children }) => (
+    <strong className="font-semibold">{children}</strong>
+  ),
+
+  // Style headers
+  h1: ({ children }) => <h1 className="mb-2 text-2xl font-bold">{children}</h1>,
+  h2: ({ children }) => <h2 className="mb-2 text-xl font-bold">{children}</h2>,
+  h3: ({ children }) => <h3 className="mb-2 text-sm font-bold">{children}</h3>,
+
+  // Style lists
+  ul: ({ children }) => <ul className="mb-2 ml-4 list-disc">{children}</ul>,
+  ol: ({ children }) => <ol className="mb-2 ml-4 list-decimal">{children}</ol>,
+
+  // Style code blocks
+  code: ({ children }) => (
+    <code className="rounded bg-gray-100 px-1 py-0.5 dark:bg-gray-800">
+      {children}
+    </code>
+  ),
+
+  // Style blockquotes
+  blockquote: ({ children }) => (
+    <blockquote className="border-l-4 border-gray-300 pl-4 italic dark:border-gray-600">
+      {children}
+    </blockquote>
+  ),
+};
+
+const MessageContent = ({ content }: { content: string }) => (
+  <Markdown
+    className="prose dark:prose-invert prose-sm max-w-none text-[15px]"
+    components={MarkdownComponents}
+  >
+    {content}
+  </Markdown>
+);
+
 export default function ChatInterface() {
   const [conversationId, setConversationId] = useState<string>("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [suggestion, setSuggestion] = useState(true);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     void (async () => {
       try {
-        const id = await fetchOrCreateConversation();
+        setIsTyping(true);
+        const id = await fetchOrCreateConversation(setMessages);
         setConversationId(id);
       } catch (err) {
         console.error("Failed to get conversation:", err);
+      } finally {
+        setIsTyping(() => false);
       }
     })();
   }, []);
@@ -188,7 +249,6 @@ export default function ChatInterface() {
     const isUser = message.role === "user";
     return (
       <div
-        key={message.id}
         className={`mb-6 flex gap-3 ${isUser ? "justify-end" : "justify-start"}`}
       >
         {!isUser && (
@@ -270,8 +330,12 @@ export default function ChatInterface() {
                   </Card>
                 ))}
               </div>
+            ) : message.role === "assistant" ? (
+              <MessageContent content={message.content} />
             ) : (
-              <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+              <div className="text-sm whitespace-pre-wrap">
+                {message.content}
+              </div>
             )}
           </div>
         </div>
@@ -300,44 +364,43 @@ export default function ChatInterface() {
           {!loading ? (
             <div className="-bottom-36 flex flex-1 justify-center overflow-y-auto px-6 py-6">
               <div className="w-full max-w-5xl">
-                {messages.map(renderMessage)}
+                {messages.map((message) => (
+                  <Fragment key={message.id}>{renderMessage(message)}</Fragment>
+                ))}
 
-                <div className="mt-12 mb-6 flex justify-end gap-3">
-                  <div className="order-first max-w-[80%] opacity-80 hover:opacity-100">
-                    <Card className="group rounded-2xl border border-slate-700/50 bg-slate-900/60 p-0 text-white shadow-sm ring-1 shadow-blue-600/30 ring-blue-900/10 backdrop-blur-sm transition-all duration-300 hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-600/20">
-                      <div className="space-y-3">
-                        <CardContent className="relative p-3">
-                          <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+                <div className="mt-12 mb-6 flex justify-end gap-3 pb-5">
+                  {suggestion && (
+                    <div className="order-first max-w-[80%] opacity-80 hover:opacity-100">
+                      <Card className="group rounded-2xl border border-slate-700/50 bg-slate-900/60 p-0 text-white shadow-sm ring-1 shadow-blue-600/30 ring-blue-900/10 backdrop-blur-sm transition-all duration-300 hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-600/20">
+                        <div className="space-y-3">
+                          <CardContent className="relative p-3">
+                            <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
 
-                          <div className="items-star relative z-10 mb-3 flex justify-between text-sm">
-                            <h4 className="flex items-center gap-2 font-semibold text-slate-100">
-                              Try asking :
-                            </h4>
-                          </div>
+                            <div className="relative z-10 mb-3 flex items-center justify-start gap-2 text-sm">
+                              <HelpCircle className="h-4 w-4 text-slate-200" />
+                              <h4 className="flex items-center gap-2 font-semibold text-slate-100">
+                                Try asking :
+                              </h4>
+                            </div>
 
-                          <div className="relative z-10 flex flex-col flex-wrap gap-2">
-                            {suggestions.map((suggestion, index) => (
-                              <Badge
-                                key={index}
-                                onClick={() => handleSend(suggestion.text)}
-                                className="flex cursor-pointer gap-3 border-blue-800/40 bg-blue-900/30 px-2 py-1 text-sm font-normal text-blue-300 shadow-sm backdrop-blur-sm hover:bg-blue-800/50"
-                              >
-                                <suggestion.icon className="h-4 w-4 text-blue-400 drop-shadow-sm" />
+                            <div className="relative z-10 flex flex-col flex-wrap gap-2">
+                              {suggestions.map((suggestion, index) => (
+                                <Badge
+                                  key={index}
+                                  onClick={() => handleSend(suggestion.text)}
+                                  className="flex cursor-pointer gap-3 border-blue-800/40 bg-blue-900/30 px-2 py-1 text-sm font-normal text-blue-300 shadow-sm backdrop-blur-sm hover:bg-blue-800/50"
+                                >
+                                  <suggestion.icon className="h-4 w-4 text-blue-400 drop-shadow-sm" />
 
-                                {suggestion.text}
-                              </Badge>
-                            ))}
-                          </div>
-                        </CardContent>
-                      </div>
-                    </Card>
-                  </div>
-
-                  <Avatar className="mt-1 h-8 w-8 shadow-lg ring-1 shadow-blue-600/20 ring-blue-500/30">
-                    <AvatarFallback className="bg-gradient-to-br from-teal-500 to-teal-800 text-white">
-                      <HelpCircle className="h-4 w-4" />
-                    </AvatarFallback>
-                  </Avatar>
+                                  {suggestion.text}
+                                </Badge>
+                              ))}
+                            </div>
+                          </CardContent>
+                        </div>
+                      </Card>
+                    </div>
+                  )}
                 </div>
 
                 {isTyping && (
@@ -401,10 +464,18 @@ export default function ChatInterface() {
                         >
                           <Mic className="h-4 w-4" />
                         </Button>
+                        <Button
+                          onClick={() => setSuggestion((prev) => !prev)}
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0 text-slate-400 backdrop-blur-sm hover:bg-slate-700/50 hover:text-blue-400"
+                        >
+                          <HelpCircle className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
                     <Button
-                      onClick={() => handleSend}
+                      onClick={() => handleSend()}
                       disabled={!input.trim() || isTyping}
                       className="rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-3 text-white shadow-lg ring-1 shadow-blue-600/30 ring-blue-500/20 transition-all duration-300 hover:from-blue-700 hover:to-blue-800 hover:ring-blue-400/30"
                     >
@@ -415,10 +486,13 @@ export default function ChatInterface() {
 
                 {/* Model Info */}
                 <div className="border-t border-slate-700/50 px-4 py-2">
-                  <div className="w-fit rounded-md border border-slate-600/30 bg-slate-800/50 px-3 py-1 backdrop-blur-sm">
-                    <span className="text-xs text-slate-400">
+                  <div className="w-fit cursor-pointer rounded-md border border-slate-600/30 bg-slate-800/50 px-3 py-1 backdrop-blur-sm">
+                    <Link
+                      href="https://www.ibm.com/granite"
+                      className="text-xs text-slate-400"
+                    >
                       ibm-granite/granite-3.3-8b-instruct
-                    </span>
+                    </Link>
                   </div>
                 </div>
               </div>

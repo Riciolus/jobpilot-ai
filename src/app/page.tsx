@@ -186,17 +186,19 @@ export default function Home() {
           </p>
 
           <div className="mb-12 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Button
-              size="lg"
-              className="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-4 text-lg text-white shadow-2xl ring-1 shadow-blue-600/40 ring-blue-500/30 hover:from-blue-700 hover:to-purple-700 hover:ring-blue-400/50"
-            >
-              Get Started Free
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
+            <Link href="/auth/register">
+              <Button
+                size="lg"
+                className="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-4 text-lg text-white shadow-2xl ring-1 shadow-blue-600/40 ring-blue-500/30 hover:from-blue-700 hover:to-purple-700 hover:ring-blue-400/50"
+              >
+                Get Started Free
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
             <Button
               size="lg"
               variant="outline"
-              className="border-slate-600/50 bg-slate-900/20 px-8 py-4 text-lg text-slate-300 shadow-lg shadow-black/20 backdrop-blur-sm hover:bg-slate-800/50"
+              className="border-slate-600/50 bg-slate-900/20 px-8 py-4 text-lg text-slate-300 shadow-lg shadow-black/20 backdrop-blur-sm hover:bg-slate-800/50 hover:text-slate-200"
             >
               Schedule Demo
             </Button>
@@ -314,21 +316,27 @@ const Navbar = () => {
 
           {/* Right Side Actions */}
           <div className="hidden items-center space-x-4 lg:flex">
-            <Button
-              variant="ghost"
-              className="text-slate-300 hover:bg-slate-800/50 hover:text-blue-400"
-            >
-              <Link href="/auth/login">Login</Link>
-            </Button>
-            <Button
-              variant="outline"
-              className="border-slate-700 bg-transparent text-slate-300 hover:bg-blue-950/50 hover:text-blue-300"
-            >
-              Support
-            </Button>
-            <Button className="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg ring-1 shadow-blue-600/25 ring-blue-500/20 hover:from-blue-700 hover:to-blue-800">
-              <Link href="/auth/login">Get Started</Link>
-            </Button>
+            <Link href="/auth/login">
+              <Button
+                variant="ghost"
+                className="text-slate-300 hover:bg-slate-800/50 hover:text-blue-400"
+              >
+                Login
+              </Button>
+            </Link>
+            <Link href="https://github.com/Riciolus/jobpilot-ai">
+              <Button
+                variant="outline"
+                className="border-slate-700 bg-transparent text-slate-300 hover:bg-blue-950/50 hover:text-blue-300"
+              >
+                Support
+              </Button>
+            </Link>
+            <Link href="/auth/login">
+              <Button className="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg ring-1 shadow-blue-600/25 ring-blue-500/20 hover:from-blue-700 hover:to-blue-800">
+                Get Started
+              </Button>
+            </Link>
           </div>
 
           {/* Mobile menu button */}

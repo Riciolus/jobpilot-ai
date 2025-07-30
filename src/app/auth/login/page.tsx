@@ -80,7 +80,7 @@ export default function LoginPage() {
             <Button
               onClick={() => signIn("google", { callbackUrl: "/chat" })}
               variant="outline"
-              className="w-full border-slate-700/50 bg-slate-800/30 text-slate-300 backdrop-blur-sm hover:bg-slate-800/50 hover:text-slate-200"
+              className="w-full cursor-pointer border-slate-700/50 bg-slate-800/30 text-slate-300 backdrop-blur-sm hover:bg-slate-800/50 hover:text-slate-200"
             >
               <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24">
                 <path
@@ -106,7 +106,7 @@ export default function LoginPage() {
             <Button
               onClick={() => signIn("github", { callbackUrl: "/chat" })}
               variant="outline"
-              className="w-full border-slate-700/50 bg-slate-800/30 text-slate-300 backdrop-blur-sm hover:bg-slate-800/50 hover:text-slate-200"
+              className="w-full cursor-pointer border-slate-700/50 bg-slate-800/30 text-slate-300 backdrop-blur-sm hover:bg-slate-800/50 hover:text-slate-200"
             >
               <svg
                 className="mr-2 h-5 w-5"

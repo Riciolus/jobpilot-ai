@@ -16,6 +16,7 @@ import { Eye, EyeOff, Mail, Lock, User, ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { signIn } from "next-auth/react";
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -78,7 +79,7 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <CardTitle className="bg-gradient-to-r from-white to-purple-200 bg-clip-text text-2xl font-bold text-transparent text-white">
+            <CardTitle className="bg-gradient-to-r from-white to-purple-200 bg-clip-text text-2xl font-bold text-white">
               Create your account
             </CardTitle>
             <CardDescription className="mt-2 text-slate-400">
@@ -91,8 +92,9 @@ export default function RegisterPage() {
           {/* Social Registration */}
           <div className="space-y-3">
             <Button
+              onClick={() => signIn("google", { callbackUrl: "/chat" })}
               variant="outline"
-              className="w-full border-slate-700/50 bg-slate-800/30 text-slate-300 backdrop-blur-sm hover:bg-slate-800/50 hover:text-slate-200"
+              className="w-full cursor-pointer border-slate-700/50 bg-slate-800/30 text-slate-300 backdrop-blur-sm hover:bg-slate-800/50 hover:text-slate-200"
             >
               <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24">
                 <path
@@ -116,8 +118,9 @@ export default function RegisterPage() {
             </Button>
 
             <Button
+              onClick={() => signIn("github", { callbackUrl: "/chat" })}
               variant="outline"
-              className="w-full border-slate-700/50 bg-slate-800/30 text-slate-300 backdrop-blur-sm hover:bg-slate-800/50 hover:text-slate-200"
+              className="w-full cursor-pointer border-slate-700/50 bg-slate-800/30 text-slate-300 backdrop-blur-sm hover:bg-slate-800/50 hover:text-slate-200"
             >
               <svg
                 className="mr-2 h-5 w-5"

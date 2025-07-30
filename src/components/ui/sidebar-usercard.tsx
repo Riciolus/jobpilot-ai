@@ -20,6 +20,8 @@ type SidebarUserCardProps = {
 
 const SidebarUserCard = ({ user }: SidebarUserCardProps) => {
   const handleLogout = async () => {
+    localStorage.setItem("conversationId", "");
+
     await signOut({ redirectTo: "/" });
   };
 

@@ -1,3 +1,4 @@
+import type { Message } from "@/app/(auth-check)/(with-sidebar)/chat/page";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -5,28 +6,61 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-type initResponse = {
-  alreadyInitialized: boolean;
-  conversationId: string;
-};
-
-export async function fetchOrCreateConversation(): Promise<string> {
-  let convId = localStorage.getItem("conversationId");
-
+export async function fetchOrCreateConversation(
+  setMessages: React.Dispatch<React.SetStateAction<Message[]>>,
+): Promise<string> {
+  const convId = localStorage.getItem("conversationId");
   if (convId) return convId;
 
   const res = await fetch("/api/chat/init", {
     method: "POST",
   });
 
-  if (!res.ok) {
+  if (!res.ok || !res.body) {
     throw new Error("Failed to create conversation");
   }
 
-  const data = (await res.json()) as initResponse;
+  const newConvId = res.headers.get("x-conversation-id");
+  if (!newConvId) throw new Error("Missing conversation ID");
 
-  convId = data.conversationId;
+  localStorage.setItem("conversationId", newConvId);
 
-  localStorage.setItem("conversationId", convId);
-  return convId;
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let assistantContent = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    const chunk = decoder.decode(value, { stream: true });
+    assistantContent += chunk;
+
+    setMessages((prev) => {
+      const existingAssistant = prev.find(
+        (msg) => msg.role === "assistant" && msg.id === "streaming",
+      );
+      if (existingAssistant) {
+        return prev.map((msg) =>
+          msg.id === "streaming" ? { ...msg, content: assistantContent } : msg,
+        );
+      } else {
+        return [
+          ...prev,
+          {
+            id: "streaming",
+            role: "assistant",
+            content: chunk,
+            type: "text",
+            conversationId: newConvId,
+          },
+        ];
+      }
+    });
+  }
+
+  // After full stream is done, get conversation ID (e.g. via a header or separate fetch)
+  // If your backend includes conversationId in a header:
+
+  return newConvId;
 }
