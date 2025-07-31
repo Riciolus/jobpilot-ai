@@ -138,7 +138,7 @@ const MarkdownComponents: Components = {
 
 const MessageContent = ({ content }: { content: string }) => (
   <Markdown
-    className="prose dark:prose-invert prose-sm max-w-none text-[15px]"
+    className="prose dark:prose-invert prose-sm max-w-none text-sm md:text-[15px]"
     components={MarkdownComponents}
   >
     {content}
@@ -294,16 +294,23 @@ export default function ChatInterface() {
     const isUser = message.role === "user";
     return (
       <div
-        className={`mb-6 flex gap-3 ${isUser ? "justify-end" : "justify-start"}`}
+        className={cn(
+          "mb-6 flex gap-3",
+          isUser
+            ? "justify-end"
+            : "flex-col items-center justify-center md:flex-row md:justify-start",
+        )}
       >
         {!isUser && (
-          <Avatar className="mt-1 h-8 w-8 shadow-lg ring-1 shadow-blue-600/20 ring-blue-500/20">
-            <AvatarFallback className="border border-blue-800/50 bg-gradient-to-br from-blue-900/80 to-blue-800/60 text-blue-300 backdrop-blur-sm">
-              <Brain className="h-4 w-4" />
-            </AvatarFallback>
-          </Avatar>
+          <div className="self-start">
+            <Avatar className="mt-1 h-8 w-8 shadow-lg shadow-blue-600/20 ring-blue-500/20">
+              <AvatarFallback className="border border-blue-800/50 bg-gradient-to-br from-blue-900/80 to-blue-800/60 text-blue-300 backdrop-blur-sm">
+                <Brain className="h-4 w-4" />
+              </AvatarFallback>
+            </Avatar>
+          </div>
         )}
-        <div className={`max-w-[80%] ${isUser ? "order-first" : ""}`}>
+        <div className={`max-w-[100%] ${isUser ? "order-first" : ""}`}>
           <div
             className={cn(
               "rounded-2xl backdrop-blur-sm",
@@ -317,29 +324,12 @@ export default function ChatInterface() {
                   ],
             )}
           >
-            {message.type === "career-suggestion" ? (
-              <div className="space-y-2">
-                {message.content.split("\n").map((line, index) => (
-                  <div key={`${index}-${line}`} className="text-sm">
-                    {line.startsWith("•") ? (
-                      <div className="flex items-start gap-2">
-                        <span className="font-bold text-blue-400 drop-shadow-sm">
-                          •
-                        </span>
-                        <span>{line.substring(2)}</span>
-                      </div>
-                    ) : (
-                      <div>{line}</div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : message.type === "job-card" ? (
+            {message.type === "job-card" ? (
               <div>
                 <div className="mb-5 space-y-3">
                   <p className="my-3 text-sm">{message.content}</p>
                 </div>
-                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                <div className="grid grid-cols-1 gap-3 px-3 md:grid-cols-2 md:px-0">
                   {message.metadata?.jobs?.map((job: Job, index: number) => (
                     <Card
                       key={index}
@@ -355,7 +345,7 @@ export default function ChatInterface() {
                               <Link href={job.link} target="_blank">
                                 <h4 className="flex items-center gap-2 font-semibold text-slate-100">
                                   <Briefcase className="h-4 w-4 flex-shrink-0 text-blue-400 drop-shadow-sm" />
-                                  <span className="truncate hover:text-amber-100 hover:underline hover:underline-offset-4">
+                                  <span className="truncate text-sm hover:text-amber-100 hover:underline hover:underline-offset-4">
                                     {job.title}
                                   </span>
                                 </h4>
@@ -434,7 +424,7 @@ export default function ChatInterface() {
 
           {/* Chat Messages */}
           {!loading ? (
-            <div className="-bottom-36 flex flex-1 justify-center overflow-y-auto px-6 py-6">
+            <div className="-bottom-36 flex flex-1 justify-center overflow-y-auto px-3 py-6 md:p-6">
               <div className="w-full max-w-5xl">
                 {messages.map((message) => (
                   <Fragment key={message.id}>{renderMessage(message)}</Fragment>
@@ -518,8 +508,8 @@ export default function ChatInterface() {
           <div className="relative">
             <div className="animate-pin absolute -bottom-36 left-1/4 h-56 w-96 animate-pulse rounded-full bg-fuchsia-400/30 blur-3xl"></div>
             <div className="animate-pin absolute right-1/4 -bottom-36 h-56 w-72 animate-pulse rounded-full bg-yellow-400/30 blur-3xl"></div>
-            <div className="mx-auto mb-3 h-fit max-w-5xl">
-              <div className="rounded-2xl border border-slate-700/50 bg-slate-900/80 shadow-2xl ring-1 shadow-black/20 ring-slate-800/50 backdrop-blur-xl">
+            <div className="mx-auto mb-0 h-fit max-w-5xl md:mb-3">
+              <div className="rounded-t-2xl border border-slate-700/50 bg-slate-900/80 shadow-2xl ring-1 shadow-black/20 ring-slate-800/50 backdrop-blur-xl md:rounded-2xl">
                 <div className="p-4">
                   <div className="flex items-end gap-3">
                     <div className="relative flex-1">

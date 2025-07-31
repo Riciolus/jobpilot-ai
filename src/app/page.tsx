@@ -375,15 +375,19 @@ const Navbar = () => {
                 About
               </a>
               <div className="flex flex-col gap-2 px-3 pt-2">
-                <Button
-                  variant="outline"
-                  className="border-slate-700 bg-transparent text-slate-300 hover:bg-blue-950/50"
-                >
-                  <Link href="/auth/login">Login</Link>
-                </Button>
-                <Button className="bg-blue-600 text-white hover:bg-blue-700">
-                  <Link href="/auth/login">Get Started</Link>
-                </Button>
+                <Link href="/auth/login">
+                  <Button
+                    variant="outline"
+                    className="w-full border-slate-700 bg-transparent text-slate-300 hover:bg-blue-950/50"
+                  >
+                    Login
+                  </Button>
+                </Link>
+                <Link href="/auth/login">
+                  <Button className="w-full bg-blue-600 text-white hover:bg-blue-700">
+                    Get Started
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>
