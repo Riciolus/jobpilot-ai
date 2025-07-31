@@ -59,8 +59,5 @@ export async function fetchOrCreateConversation(
     });
   }
 
-  // After full stream is done, get conversation ID (e.g. via a header or separate fetch)
-  // If your backend includes conversationId in a header:
-
   return newConvId;
 }

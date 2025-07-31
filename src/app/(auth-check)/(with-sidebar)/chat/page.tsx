@@ -20,31 +20,33 @@ import {
   Search,
   TrendingUp,
   BarChart3,
-  RefreshCw,
   HelpCircle,
+  CalendarSearch,
+  Bookmark,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import { fetchOrCreateConversation } from "@/lib/utils";
+import { cn, fetchOrCreateConversation } from "@/lib/utils";
 import ReactMarkdown, { type Components } from "react-markdown";
 import Link from "next/link";
 
-interface Job {
+export interface Job {
   title: string;
   company: string;
   location: string;
   salary: string;
   tags: string[];
+  link: string;
 }
 
 export interface Message {
   id?: string;
   role: "user" | "assistant";
   content: string;
-  type?: "text" | "career-suggestion" | "job-card";
+  type: "text" | "career-suggestion" | "job-card";
   conversationId: string;
   metadata?: { jobs: Job[] };
 }
@@ -55,8 +57,8 @@ type ReactMarkdownProps = ComponentProps<typeof ReactMarkdown> & {
 
 const suggestions = [
   {
-    text: "Search me a job that suits me",
-    icon: Search,
+    text: "Give me jobs recommendation",
+    icon: CalendarSearch,
   },
   {
     text: "What skills should I learn next?",
@@ -67,10 +69,36 @@ const suggestions = [
     icon: BarChart3,
   },
   {
-    text: "I want to switch industries",
-    icon: RefreshCw,
+    text: "I need a job with remote options",
+    icon: Search,
   },
 ];
+
+function isJobSearchIntent(message: string): boolean {
+  const lowered = message.toLowerCase();
+
+  // More relaxed keyword check
+  const jobKeywords = [
+    "job",
+    "jobs",
+    "position",
+    "vacancy",
+    "hiring",
+    "opening",
+    "looking for",
+  ];
+  const likelyIntent = jobKeywords.some((kw) => lowered.includes(kw));
+
+  // Less strict question detection: only block classic informational questions
+  const likelyNotSearch =
+    lowered.startsWith("how ") ||
+    lowered.startsWith("why ") ||
+    lowered.startsWith("can i ") ||
+    lowered.endsWith("?");
+
+  // Let ambiguous ones pass through to LLM layer
+  return likelyIntent && !likelyNotSearch;
+}
 
 const Markdown = ({ className, ...props }: ReactMarkdownProps) => (
   <div className={className}>
@@ -185,6 +213,23 @@ export default function ChatInterface() {
 
     setIsTyping(true);
 
+    // 👇 Insert this block before sending to /api/messages
+    if (isJobSearchIntent(currentInput)) {
+      const res = await fetch(
+        `/api/chat/get-jobs?convId=${conversationId}&userMsg=${currentInput}`,
+        {
+          method: "GET",
+        },
+      );
+
+      const messagePayload = (await res.json()) as { data: Message };
+
+      setMessages((prev) => [...prev, userMessage, messagePayload.data]);
+      setInput("");
+      setIsTyping(false);
+      return;
+    }
+
     try {
       const res = await fetch(`/api/messages`, {
         method: "POST",
@@ -260,11 +305,17 @@ export default function ChatInterface() {
         )}
         <div className={`max-w-[80%] ${isUser ? "order-first" : ""}`}>
           <div
-            className={`rounded-2xl px-4 py-3 backdrop-blur-sm ${
+            className={cn(
+              "rounded-2xl backdrop-blur-sm",
               isUser
-                ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-xl ring-1 shadow-blue-600/30 ring-blue-500/30"
-                : "border border-slate-700/50 bg-slate-800/80 text-slate-100 shadow-lg shadow-black/20"
-            }`}
+                ? "bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-3 text-white shadow-xl ring-1 shadow-blue-600/30 ring-blue-500/30"
+                : [
+                    "text-slate-100 shadow-lg shadow-black/20",
+                    message.type !== "job-card"
+                      ? "border border-slate-700/50 bg-slate-800/80 px-4 py-3"
+                      : "p-0", // fallback if it's a job-card
+                  ],
+            )}
           >
             {message.type === "career-suggestion" ? (
               <div className="space-y-2">
@@ -284,51 +335,72 @@ export default function ChatInterface() {
                 ))}
               </div>
             ) : message.type === "job-card" ? (
-              <div className="space-y-3">
-                <p className="mb-3 text-sm">{message.content}</p>
-                {message.metadata?.jobs?.map((job: Job, index: number) => (
-                  <Card
-                    key={index}
-                    className="group cursor-pointer border border-slate-700/50 bg-slate-900/60 backdrop-blur-sm transition-all duration-300 hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-600/20"
-                  >
-                    <CardContent className="relative p-3">
-                      {/* Subtle glow effect on hover */}
-                      <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+              <div>
+                <div className="mb-5 space-y-3">
+                  <p className="my-3 text-sm">{message.content}</p>
+                </div>
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                  {message.metadata?.jobs?.map((job: Job, index: number) => (
+                    <Card
+                      key={index}
+                      className="group h-full cursor-pointer border border-slate-700/50 bg-slate-900/60 p-0 backdrop-blur-sm transition-all duration-300 hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-600/20"
+                    >
+                      <CardContent className="relative flex h-full flex-col p-3">
+                        {/* Subtle glow effect on hover */}
+                        <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
 
-                      <div className="relative z-10 mb-2 flex items-start justify-between">
-                        <div>
-                          <h4 className="flex items-center gap-2 font-semibold text-slate-100">
-                            <Briefcase className="h-4 w-4 text-blue-400 drop-shadow-sm" />
-                            {job.title}
-                          </h4>
-                          <p className="text-sm text-slate-400">
-                            {job.company}
-                          </p>
+                        <div className="relative z-10 mb-2 flex flex-1 items-start justify-between">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center justify-between">
+                              <Link href={job.link} target="_blank">
+                                <h4 className="flex items-center gap-2 font-semibold text-slate-100">
+                                  <Briefcase className="h-4 w-4 flex-shrink-0 text-blue-400 drop-shadow-sm" />
+                                  <span className="truncate hover:text-amber-100 hover:underline hover:underline-offset-4">
+                                    {job.title}
+                                  </span>
+                                </h4>
+                              </Link>
+
+                              <Bookmark className="h-4 w-4 text-slate-300" />
+                            </div>
+                            <p className="truncate text-sm text-slate-400">
+                              {job.company}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                      <div className="relative z-10 mb-3 flex items-center gap-4 text-sm text-slate-400">
-                        <span className="flex items-center gap-1">
-                          <MapPin className="h-3 w-3" />
-                          {job.location}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <DollarSign className="h-3 w-3" />
-                          {job.salary}
-                        </span>
-                      </div>
-                      <div className="relative z-10 flex flex-wrap gap-1">
-                        {job.tags.map((tag: string, tagIndex: number) => (
-                          <Badge
-                            key={tagIndex}
-                            className="border-blue-800/50 bg-blue-900/40 text-xs text-blue-300 shadow-sm backdrop-blur-sm hover:bg-blue-800/50"
-                          >
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+
+                        <div className="relative z-10 mb-3 flex items-center gap-4 text-sm text-slate-400">
+                          <span className="flex min-w-0 flex-1 items-center gap-1">
+                            <MapPin className="h-3 w-3 flex-shrink-0" />
+                            <span className="truncate">{job.location}</span>
+                          </span>
+                          <span className="flex flex-shrink-0 items-center gap-1">
+                            <DollarSign className="h-3 w-3" />
+                            <span className="text-xs">{job.salary}</span>
+                          </span>
+                        </div>
+
+                        <div className="relative z-10 flex flex-wrap gap-1">
+                          {job.tags
+                            .slice(0, 3)
+                            .map((tag: string, tagIndex: number) => (
+                              <Badge
+                                key={tagIndex}
+                                className="border-blue-800/50 bg-blue-900/40 text-xs text-blue-300 shadow-sm backdrop-blur-sm hover:bg-blue-800/50"
+                              >
+                                {tag}
+                              </Badge>
+                            ))}
+                          {job.tags.length > 3 && (
+                            <Badge className="border-slate-600/50 bg-slate-800/40 text-xs text-slate-400">
+                              +{job.tags.length - 3}
+                            </Badge>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               </div>
             ) : message.role === "assistant" ? (
               <MessageContent content={message.content} />
@@ -388,9 +460,21 @@ export default function ChatInterface() {
                                 <Badge
                                   key={index}
                                   onClick={() => handleSend(suggestion.text)}
-                                  className="flex cursor-pointer gap-3 border-blue-800/40 bg-blue-900/30 px-2 py-1 text-sm font-normal text-blue-300 shadow-sm backdrop-blur-sm hover:bg-blue-800/50"
+                                  className={cn(
+                                    "flex cursor-pointer gap-3 border-blue-800/40 bg-blue-900/30 px-2 py-1 text-sm font-normal text-blue-300 shadow-sm backdrop-blur-sm hover:bg-blue-800/50",
+                                    suggestion.text ===
+                                      "Give me jobs recommendation" &&
+                                      "border-yellow-600/40 bg-amber-300/30 text-amber-400 hover:bg-yellow-400/50",
+                                  )}
                                 >
-                                  <suggestion.icon className="h-4 w-4 text-blue-400 drop-shadow-sm" />
+                                  <suggestion.icon
+                                    className={cn(
+                                      "h-4 w-4 text-blue-400 drop-shadow-sm",
+                                      suggestion.text ===
+                                        "Give me jobs recommendation" &&
+                                        "text-yellow-500",
+                                    )}
+                                  />
 
                                   {suggestion.text}
                                 </Badge>

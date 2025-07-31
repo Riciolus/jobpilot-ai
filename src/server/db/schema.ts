@@ -1,3 +1,4 @@
+import type { Job } from "@/app/(auth-check)/(with-sidebar)/chat/page";
 import { relations, sql } from "drizzle-orm";
 import { index, pgEnum, pgTableCreator, primaryKey } from "drizzle-orm/pg-core";
 import { type AdapterAccount } from "next-auth/adapters";
@@ -155,6 +156,7 @@ export const messages = createTable("message", (d) => ({
   role: roleEnum("role").notNull(),
   type: typeEnum("type").notNull(),
   content: d.text().notNull(),
+  metadata: d.json().$type<{ jobs: Job[] }>(),
   createdAt: d.timestamp({ withTimezone: true }).defaultNow().notNull(),
 }));
 

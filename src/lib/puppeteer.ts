@@ -1,15 +1,7 @@
+import type { Job } from "@/app/(auth-check)/(with-sidebar)/chat/page";
 import puppeteer, { type Page } from "puppeteer";
 
-interface JobPosting {
-  title: string;
-  company: string;
-  location: string;
-  salary: string;
-  tags: string[];
-  link: string;
-}
-
-export async function scrapeGlints() {
+export async function scrapeGlints(query: string) {
   const browser = await puppeteer.launch({ headless: true }); // Watch it work
 
   try {
@@ -20,7 +12,6 @@ export async function scrapeGlints() {
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
     );
 
-    const query = "frontend+developer";
     // Go to Glints
     await page.goto(
       `https://glints.com/id/opportunities/jobs/explore?keyword=${query}&country=ID&locationName=All+Cities%2FProvinces&lowestLocationLevel=1`,
@@ -38,7 +29,7 @@ export async function scrapeGlints() {
     // Scrape jobs
     const jobs = await page.evaluate(() => {
       const jobCards = document.querySelectorAll("div[aria-label^='Job:']");
-      const result: JobPosting[] = [];
+      const result: Job[] = [];
 
       jobCards.forEach((card) => {
         // Ensure `card` is properly typed
@@ -49,10 +40,32 @@ export async function scrapeGlints() {
         const compSpan = element.querySelector(
           "span[data-cy='company_name_job_card']",
         );
+
         const compText = compSpan?.textContent?.trim() ?? "";
 
-        const [company, ...locationParts] = compText.split("\n");
-        const location = locationParts.join(", ").trim();
+        let company = "";
+        let location = "";
+
+        // Use exec() to extract with parentheses first
+        const parenRegex = /^(.+\))(.+)$/;
+        const parenMatch = parenRegex.exec(compText);
+
+        if (parenMatch?.[1] && parenMatch?.[2]) {
+          company = parenMatch[1].trim();
+          location = parenMatch[2].trim();
+        } else {
+          // Fallback: lowercase-uppercase transition
+          const fallbackRegex = /^(.*?[a-z])([A-Z].*)$/;
+          const fallbackMatch = fallbackRegex.exec(compText);
+
+          if (fallbackMatch?.[1] && fallbackMatch?.[2]) {
+            company = fallbackMatch[1].trim();
+            location = fallbackMatch[2].trim();
+          } else {
+            company = compText;
+            location = "";
+          }
+        }
 
         const tagElements = element.querySelectorAll(
           ".TagStyle__TagContentWrapper-sc-r1wv7a-1",
@@ -70,8 +83,11 @@ export async function scrapeGlints() {
           : `https://glints.com${linkPath}`;
 
         const textContent = element.innerText ?? "";
-        const salaryMatch = textContent.match(/Rp\s?[0-9.\s\-a-zA-Z]+/g);
-        const salary = salaryMatch ? salaryMatch[0].trim() : "Not specified";
+        const salaryLine = textContent
+          .split("\n")
+          .find((line) => line.trim().startsWith("Rp"));
+
+        const salary = salaryLine?.trim() ?? "Not specified";
 
         if (title && company) {
           result.push({

@@ -26,7 +26,7 @@ import { useRouter } from "next/navigation";
 export interface UserProfileForm {
   fullName: string;
   age: string;
-  educationLevel: "High School" | "D3" | "S1" | "S2";
+  educationLevel: "High School" | "D3" | "S1" | "S2" | "";
   major: string;
   location: string;
 
@@ -53,7 +53,7 @@ const initialFormData: UserProfileForm = {
   userId: "",
   fullName: "",
   age: "",
-  educationLevel: "S1",
+  educationLevel: "",
   major: "",
   location: "",
   currentStatus: "Student",
@@ -368,18 +368,18 @@ function PersonalBackgroundStep({
               <Select
                 value={formData.educationLevel}
                 onValueChange={(value) => {
-                  const formatted = value.toUpperCase();
-                  updateFormData("educationLevel", formatted);
+                  updateFormData("educationLevel", value);
                 }}
               >
                 <SelectTrigger className="h-12 border-slate-700/50 bg-slate-800/50 text-base text-slate-100 focus:border-blue-500 focus:ring-blue-500/20">
                   <SelectValue placeholder="Select your education level" />
                 </SelectTrigger>
                 <SelectContent className="border-slate-700 bg-slate-800 text-slate-100">
-                  <SelectItem value="high-school">High School</SelectItem>
-                  <SelectItem value="d3">D3 (Diploma)</SelectItem>
-                  <SelectItem value="s1">S1 (Bachelor&apos;s)</SelectItem>
-                  <SelectItem value="s2">S2 (Master&apos;s)</SelectItem>
+                  <SelectItem value="High School">High School</SelectItem>
+                  <SelectItem value="D3">D3 (Diploma)</SelectItem>
+                  <SelectItem value="S1">S1 (Bachelor&apos;s)</SelectItem>
+                  <SelectItem value="S2">S2 (Master&apos;s)</SelectItem>
+                  asd
                 </SelectContent>
               </Select>
             </div>
