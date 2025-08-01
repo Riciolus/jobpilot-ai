@@ -1,18 +1,11 @@
 "use client";
 
-import {
-  Fragment,
-  useEffect,
-  useRef,
-  useState,
-  type ComponentProps,
-} from "react";
+import { useEffect, useRef, useState, type ComponentProps } from "react";
 import {
   Send,
   Mic,
   Upload,
   User,
-  Bot,
   Briefcase,
   MapPin,
   DollarSign,
@@ -58,19 +51,19 @@ type ReactMarkdownProps = ComponentProps<typeof ReactMarkdown> & {
 const suggestions = [
   {
     text: "Give me jobs recommendation",
-    icon: CalendarSearch,
+    icon: Search,
   },
   {
     text: "What skills should I learn next?",
     icon: TrendingUp,
   },
   {
-    text: "Show me my career growth",
+    text: "How do I network effectively?",
     icon: BarChart3,
   },
   {
-    text: "I need a job with remote options",
-    icon: Search,
+    text: "Any tips for interviews?",
+    icon: CalendarSearch,
   },
 ];
 
@@ -153,6 +146,7 @@ export default function ChatInterface() {
   const [loading, setLoading] = useState(true);
   const [suggestion, setSuggestion] = useState(true);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     void (async () => {
@@ -186,6 +180,16 @@ export default function ChatInterface() {
     })();
   }, [conversationId]);
 
+  useEffect(() => {
+    const container = containerRef.current;
+    if (container) {
+      container.scrollTo({
+        top: container.scrollHeight,
+        behavior: "smooth",
+      });
+    }
+  }, [messages]);
+
   const handleSend = async (messageInput?: string) => {
     const currentInput = messageInput ?? input;
 
@@ -203,6 +207,7 @@ export default function ChatInterface() {
       textareaRef.current.style.height = "auto";
     }
 
+    setMessages((prev) => [...prev, userMessage]);
     setIsTyping(true);
 
     // 👇 Insert this block before sending to /api/messages
@@ -216,8 +221,7 @@ export default function ChatInterface() {
 
       const messagePayload = (await res.json()) as { data: Message };
 
-      setMessages((prev) => [...prev, userMessage, messagePayload.data]);
-      setInput("");
+      setMessages((prev) => [...prev, messagePayload.data]);
       setIsTyping(false);
       return;
     }
@@ -229,7 +233,7 @@ export default function ChatInterface() {
       conversationId,
     };
 
-    setMessages((prev) => [...prev, userMessage, empytAssistantMessage]);
+    setMessages((prev) => [...prev, empytAssistantMessage]);
 
     try {
       const res = await fetch(`/api/messages`, {
@@ -328,14 +332,14 @@ export default function ChatInterface() {
                     "text-slate-100 shadow-lg shadow-black/20",
                     message.type !== "job-card"
                       ? "border border-slate-700/50 bg-slate-800/80 px-4 py-3"
-                      : "p-0", // fallback if it's a job-card
+                      : "p-0",
                   ],
             )}
           >
             {message.type === "job-card" ? (
               <div>
                 <div className="mb-5 space-y-3">
-                  <p className="my-3 text-sm">{message.content}</p>
+                  <p className="my-3 text-[15px]">{message.content}</p>
                 </div>
                 <div className="grid grid-cols-1 gap-3 px-3 md:grid-cols-2 md:px-0">
                   {message.metadata?.jobs?.map((job: Job, index: number) => (
@@ -399,6 +403,14 @@ export default function ChatInterface() {
                     </Card>
                   ))}
                 </div>
+                <div className="mt-1 text-left">
+                  <span className="text-xs font-medium text-blue-300">
+                    Jobs from{" "}
+                    <Link className="hover:underline" href="https://glints.com">
+                      Glints
+                    </Link>
+                  </span>
+                </div>
               </div>
             ) : message.role === "assistant" ? (
               <MessageContent content={message.content} />
@@ -432,11 +444,35 @@ export default function ChatInterface() {
 
           {/* Chat Messages */}
           {!loading ? (
-            <div className="-bottom-36 flex flex-1 justify-center overflow-y-auto px-3 py-6 md:p-6">
+            <div
+              ref={containerRef}
+              className="-bottom-36 flex flex-1 justify-center overflow-y-auto px-3 py-6 md:p-6"
+            >
               <div className="w-full max-w-5xl">
-                {messages.map((message) => (
-                  <Fragment key={message.id}>{renderMessage(message)}</Fragment>
-                ))}
+                {messages.map((message) => renderMessage(message))}
+
+                {isTyping && (
+                  <div className="mb-6 flex gap-3 pb-6">
+                    <Avatar className="mt-1 h-8 w-8 shadow-lg ring-1 shadow-blue-600/20 ring-blue-500/20">
+                      <AvatarFallback className="border border-blue-800/50 bg-gradient-to-br from-blue-900/80 to-blue-800/60 text-blue-300 backdrop-blur-sm">
+                        <Brain className="h-4 w-4" />
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="rounded-2xl border border-slate-700/50 bg-slate-800/80 px-4 py-3 shadow-lg shadow-black/20 backdrop-blur-sm">
+                      <div className="flex space-x-1">
+                        <div className="h-2 w-2 animate-bounce rounded-full bg-blue-400 shadow-sm shadow-blue-400/50"></div>
+                        <div
+                          className="h-2 w-2 animate-bounce rounded-full bg-blue-400 shadow-sm shadow-blue-400/50"
+                          style={{ animationDelay: "0.1s" }}
+                        ></div>
+                        <div
+                          className="h-2 w-2 animate-bounce rounded-full bg-blue-400 shadow-sm shadow-blue-400/50"
+                          style={{ animationDelay: "0.2s" }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <div className="mt-12 mb-6 flex justify-end gap-3 pb-6">
                   {suggestion && (
@@ -484,29 +520,6 @@ export default function ChatInterface() {
                     </div>
                   )}
                 </div>
-
-                {isTyping && (
-                  <div className="mb-6 flex gap-3 pb-6">
-                    <Avatar className="mt-1 h-8 w-8 shadow-lg ring-1 shadow-blue-600/20 ring-blue-500/20">
-                      <AvatarFallback className="border border-blue-800/50 bg-gradient-to-br from-blue-900/80 to-blue-800/60 text-blue-300 backdrop-blur-sm">
-                        <Bot className="h-4 w-4" />
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="rounded-2xl border border-slate-700/50 bg-slate-800/80 px-4 py-3 shadow-lg shadow-black/20 backdrop-blur-sm">
-                      <div className="flex space-x-1">
-                        <div className="h-2 w-2 animate-bounce rounded-full bg-blue-400 shadow-sm shadow-blue-400/50"></div>
-                        <div
-                          className="h-2 w-2 animate-bounce rounded-full bg-blue-400 shadow-sm shadow-blue-400/50"
-                          style={{ animationDelay: "0.1s" }}
-                        ></div>
-                        <div
-                          className="h-2 w-2 animate-bounce rounded-full bg-blue-400 shadow-sm shadow-blue-400/50"
-                          style={{ animationDelay: "0.2s" }}
-                        ></div>
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           ) : (
@@ -568,7 +581,7 @@ export default function ChatInterface() {
 
                 {/* Model Info */}
                 <div className="border-t border-slate-700/50 px-4 py-2">
-                  <div className="w-fit cursor-pointer rounded-md border border-slate-600/30 bg-slate-800/50 px-3 py-1 backdrop-blur-sm">
+                  <div className="w-fit cursor-pointer rounded-md border border-slate-600/30 bg-blue-500/10 px-3 py-1 backdrop-blur-sm">
                     <Link
                       href="https://www.ibm.com/granite"
                       className="text-xs text-slate-400"
@@ -588,7 +601,7 @@ export default function ChatInterface() {
 
 const BetaBanner = () => {
   return (
-    <div className="border-b border-slate-800/50 bg-gradient-to-r from-blue-900/60 via-purple-900/40 to-blue-900/60 backdrop-blur-sm">
+    <div className="from-5%% border-b border-slate-800/50 bg-gradient-to-r from-blue-400/40 via-purple-900/40 to-blue-900/60 backdrop-blur-sm">
       <div className="flex items-center justify-between px-6 py-3">
         <SidebarTrigger className="rounded-lg border border-slate-600/30 bg-slate-800/50 p-2 text-slate-300 shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-blue-500/50 hover:bg-blue-950/50 hover:text-blue-300 md:hidden" />
         <p className="flex-1 text-center text-sm text-slate-300">

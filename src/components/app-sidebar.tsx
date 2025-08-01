@@ -13,6 +13,7 @@ import {
 
 import Image from "next/image";
 import SidebarUserCard from "./ui/sidebar-usercard";
+import Link from "next/link";
 
 type AppSidebarProps = {
   user: {
@@ -25,27 +26,27 @@ type AppSidebarProps = {
 const items = [
   {
     title: "Chat",
-    url: "#",
+    url: "/chat",
     icon: MessageCircle,
   },
   {
     title: "Explore Careers",
-    url: "#",
+    url: "/explore-careers",
     icon: Compass,
   },
   {
     title: "CV / Resume Reviewer",
-    url: "#",
+    url: "/resume-review",
     icon: Map,
   },
   {
     title: "Saved Jobs",
-    url: "#",
+    url: "/saved-jobs",
     icon: Bookmark,
   },
   {
     title: "Settings",
-    url: "#",
+    url: "/settings",
     icon: Settings,
   },
 ];
@@ -142,10 +143,10 @@ const SidebarNavigationItems = () => {
             asChild
             className="text-slate-300 hover:bg-blue-950/50 hover:text-blue-300 active:bg-blue-950 active:text-blue-300 data-[active=true]:border-r-2 data-[active=true]:border-blue-500 data-[active=true]:bg-blue-900/30 data-[active=true]:text-blue-300"
           >
-            <a href={item.url} className="flex items-center gap-3 px-3 py-2">
+            <Link href={item.url} className="flex items-center gap-3 px-3 py-2">
               <item.icon className="h-5 w-5" />
               <span className="font-medium">{item.title}</span>
-            </a>
+            </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>
       ))}
