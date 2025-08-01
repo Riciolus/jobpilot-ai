@@ -138,7 +138,7 @@ const MarkdownComponents: Components = {
 
 const MessageContent = ({ content }: { content: string }) => (
   <Markdown
-    className="prose dark:prose-invert prose-sm max-w-none text-sm md:text-[15px]"
+    className="prose dark:prose-invert prose-sm max-w-none text-sm md:text-[15.5px]"
     components={MarkdownComponents}
   >
     {content}
@@ -198,14 +198,6 @@ export default function ChatInterface() {
       conversationId,
     };
 
-    const assistantMessage: Message = {
-      role: "assistant",
-      content: "",
-      type: "text",
-      conversationId,
-    };
-
-    setMessages((prev) => [...prev, userMessage, assistantMessage]);
     setInput("");
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
@@ -229,6 +221,15 @@ export default function ChatInterface() {
       setIsTyping(false);
       return;
     }
+
+    const empytAssistantMessage: Message = {
+      role: "assistant",
+      content: "",
+      type: "text",
+      conversationId,
+    };
+
+    setMessages((prev) => [...prev, userMessage, empytAssistantMessage]);
 
     try {
       const res = await fetch(`/api/messages`, {
@@ -270,7 +271,7 @@ export default function ChatInterface() {
         });
       }
     } catch (err) {
-      console.error("Failed to create messages:", err);
+      console.log("Failed to create messages:", err);
     }
   };
 
@@ -292,6 +293,11 @@ export default function ChatInterface() {
 
   const renderMessage = (message: Message) => {
     const isUser = message.role === "user";
+
+    if (message.content.trim() === "") {
+      return null;
+    }
+
     return (
       <div
         className={cn(
@@ -310,7 +316,9 @@ export default function ChatInterface() {
             </Avatar>
           </div>
         )}
-        <div className={`max-w-[100%] ${isUser ? "order-first" : ""}`}>
+        <div
+          className={cn("max-w-full md:max-w-[80%]", isUser && "order-first")}
+        >
           <div
             className={cn(
               "rounded-2xl backdrop-blur-sm",
@@ -430,7 +438,7 @@ export default function ChatInterface() {
                   <Fragment key={message.id}>{renderMessage(message)}</Fragment>
                 ))}
 
-                <div className="mt-12 mb-6 flex justify-end gap-3 pb-5">
+                <div className="mt-12 mb-6 flex justify-end gap-3 pb-6">
                   {suggestion && (
                     <div className="order-first max-w-[80%] opacity-80 hover:opacity-100">
                       <Card className="group rounded-2xl border border-slate-700/50 bg-slate-900/60 p-0 text-white shadow-sm ring-1 shadow-blue-600/30 ring-blue-900/10 backdrop-blur-sm transition-all duration-300 hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-600/20">
