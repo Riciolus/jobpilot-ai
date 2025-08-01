@@ -1,5 +1,5 @@
 import type { Job } from "@/app/(auth-check)/(with-sidebar)/chat/page";
-import { chromium, type Page } from "playwright";
+import { chromium, type Page } from "playwright-core";
 
 const TOKEN = process.env.BROWSERLESS_TOKEN;
 
