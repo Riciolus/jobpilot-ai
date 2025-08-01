@@ -379,7 +379,6 @@ function PersonalBackgroundStep({
                   <SelectItem value="D3">D3 (Diploma)</SelectItem>
                   <SelectItem value="S1">S1 (Bachelor&apos;s)</SelectItem>
                   <SelectItem value="S2">S2 (Master&apos;s)</SelectItem>
-                  asd
                 </SelectContent>
               </Select>
             </div>

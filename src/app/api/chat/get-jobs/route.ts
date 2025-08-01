@@ -116,8 +116,15 @@ Message: "${userMessage}"
       data: messagePayload[1],
     });
   } catch (error) {
+    console.error("GET /api/chat/get-jobs error:", error);
     return NextResponse.json(
-      { status: false, message: error ?? "something went wrong" },
+      {
+        status: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : (String(error) ?? "Something went wrong"),
+      },
       { status: 400 },
     );
   }

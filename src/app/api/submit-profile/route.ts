@@ -10,9 +10,7 @@ export async function POST(req: NextRequest) {
 
     if (
       !body.userId ||
-      !body.educationLevel ||
-      !body.currentStatus ||
-      !["High School", "D3", "S1", "S2"].includes(body.educationLevel) ||
+      !["High School", "D3", "S1", "S2"].includes(body.educationLevel) || // already good
       !["Student", "Fresh Graduate", "Working", "Career Switcher"].includes(
         body.currentStatus,
       )

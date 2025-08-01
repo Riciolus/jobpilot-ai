@@ -16,6 +16,7 @@ export const educationLevelEnum = pgEnum("education_level", [
   "D3",
   "S1",
   "S2",
+  "",
 ]);
 
 export const careerStatusEnum = pgEnum("career_status", [
