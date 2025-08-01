@@ -1,22 +1,25 @@
 import type { Job } from "@/app/(auth-check)/(with-sidebar)/chat/page";
-import puppeteer, { type Page } from "puppeteer";
+import { chromium, type Page } from "playwright";
+
+const TOKEN = process.env.BROWSERLESS_TOKEN;
 
 export async function scrapeGlints(query: string) {
-  const browser = await puppeteer.launch({ headless: true }); // Watch it work
+  const browser = await chromium.connect(
+    `wss://production-sfo.browserless.io/chromium/playwright?token=${TOKEN}`,
+  );
 
   try {
-    const page = await browser.newPage();
+    const context = await browser.newContext({
+      userAgent:
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
+    });
 
-    // Set user-agent to look human
-    await page.setUserAgent(
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
-    );
+    const page = await context.newPage();
 
-    // Go to Glints
     await page.goto(
-      `https://glints.com/id/opportunities/jobs/explore?keyword=${query}&country=ID&locationName=All+Cities%2FProvinces&lowestLocationLevel=1`,
+      `https://glints.com/id/opportunities/jobs/explore?keyword=${query}&country=ID&locationName=All+Cities%2FProvinces`,
       {
-        waitUntil: "networkidle2",
+        waitUntil: "networkidle",
       },
     );
 
@@ -101,7 +104,7 @@ export async function scrapeGlints(query: string) {
         }
       });
 
-      return result.slice(0, 9);
+      return result.slice(0, 8);
     });
 
     return jobs;

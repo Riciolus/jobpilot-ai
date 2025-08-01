@@ -34,7 +34,7 @@ const items = [
     icon: Compass,
   },
   {
-    title: "My Plan",
+    title: "CV / Resume Reviewer",
     url: "#",
     icon: Map,
   },

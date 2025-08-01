@@ -478,7 +478,7 @@ export default function ChatInterface() {
                 </div>
 
                 {isTyping && (
-                  <div className="mb-6 flex gap-3">
+                  <div className="mb-6 flex gap-3 pb-6">
                     <Avatar className="mt-1 h-8 w-8 shadow-lg ring-1 shadow-blue-600/20 ring-blue-500/20">
                       <AvatarFallback className="border border-blue-800/50 bg-gradient-to-br from-blue-900/80 to-blue-800/60 text-blue-300 backdrop-blur-sm">
                         <Bot className="h-4 w-4" />
