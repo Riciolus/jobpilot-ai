@@ -271,7 +271,6 @@ export default function ExploreCareersPage() {
         return "text-slate-400 bg-slate-800/40 border-slate-700/50";
     }
   };
-
   return (
     <div className="relative flex h-screen w-full overflow-hidden">
       {/* Background Glow Effects */}
