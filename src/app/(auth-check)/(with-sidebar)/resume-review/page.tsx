@@ -33,6 +33,7 @@ import {
   type PDFDocumentProxy,
 } from "pdfjs-dist";
 import type { TextContent } from "pdfjs-dist/types/src/display/api";
+import { cn } from "@/lib/utils";
 
 // Needed to avoid CORS issues
 GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
@@ -52,6 +53,19 @@ export interface CVAnalysis {
     missing: string[];
   };
   suggestions: string[];
+}
+
+function getGradient(score: number) {
+  if (score < 40) {
+    // Red to orange
+    return "linear-gradient(to right, #ef4444, #f97316)";
+  } else if (score < 70) {
+    // Orange to yellow
+    return "linear-gradient(to right, #f59e0b, #facc15)";
+  } else {
+    // Yellow to green
+    return "linear-gradient(to right, #facc15, #22c55e)";
+  }
 }
 
 export default function CVReviewPage() {
@@ -464,8 +478,17 @@ export default function CVReviewPage() {
                         </div>
                       </div>
                       <Progress
-                        value={analysis?.overallScore}
-                        className="h-2 [&>div]:bg-amber-500"
+                        value={analysis!.overallScore}
+                        className={cn(
+                          "h-2 w-full bg-neutral-900/80",
+                          analysis!.overallScore < 40 &&
+                            "[&>div]:bg-gradient-to-r [&>div]:from-red-500 [&>div]:to-orange-400",
+                          analysis!.overallScore >= 40 &&
+                            analysis!.overallScore < 70 &&
+                            "[&>div]:bg-gradient-to-r [&>div]:from-amber-400 [&>div]:to-yellow-300",
+                          analysis!.overallScore >= 70 &&
+                            "[&>div]:bg-gradient-to-r [&>div]:from-yellow-300 [&>div]:to-green-400",
+                        )}
                       />
                     </CardContent>
                   </Card>

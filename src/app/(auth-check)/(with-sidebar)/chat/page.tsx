@@ -102,7 +102,7 @@ const Markdown = ({ className, ...props }: ReactMarkdownProps) => (
 );
 
 const MarkdownComponents: Components = {
-  p: ({ children }) => <p className="mb-4">{children}</p>,
+  p: ({ children }) => <p className="mb-4 text-slate-200">{children}</p>,
   strong: ({ children }) => (
     <strong className="font-semibold">{children}</strong>
   ),
@@ -118,9 +118,13 @@ const MarkdownComponents: Components = {
 
   // Style code blocks
   code: ({ children }) => (
-    <code className="rounded bg-gray-100 px-1 py-0.5 dark:bg-gray-800">
+    <code className="rounded bg-gray-900 px-1 py-0.5">{children}</code>
+  ),
+
+  pre: ({ children }) => (
+    <pre className="borde mb-3 rounded-xl border-slate-600 bg-gray-900 p-3">
       {children}
-    </code>
+    </pre>
   ),
 
   // Style blockquotes
