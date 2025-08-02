@@ -161,6 +161,31 @@ export const messages = createTable("message", (d) => ({
   createdAt: d.timestamp({ withTimezone: true }).defaultNow().notNull(),
 }));
 
+export const savedJobs = createTable("saved_jobs", (d) => ({
+  id: d
+    .varchar({ length: 255 })
+    .notNull()
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+
+  userId: d.varchar({ length: 255 }).notNull(),
+
+  title: d.text().notNull(),
+  company: d.text().notNull(),
+  location: d.text(),
+  salary: d.text().notNull(),
+  tags: d.text().array(),
+  link: d.text().notNull(),
+  savedAt: d.timestamp({ mode: "date" }).notNull(),
+}));
+
+export const savedJobsRelations = relations(savedJobs, ({ one }) => ({
+  user: one(users, {
+    fields: [savedJobs.userId],
+    references: [users.id],
+  }),
+}));
+
 export const conversationsRelations = relations(
   conversations,
   ({ one, many }) => ({

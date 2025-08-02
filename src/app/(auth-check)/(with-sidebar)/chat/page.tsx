@@ -15,6 +15,7 @@ import {
   BarChart3,
   HelpCircle,
   CalendarSearch,
+  BookmarkPlus,
   Bookmark,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -33,6 +34,7 @@ export interface Job {
   salary: string;
   tags: string[];
   link: string;
+  bookmark?: false;
 }
 
 export interface Message {
@@ -142,6 +144,7 @@ export default function ChatInterface() {
   const [conversationId, setConversationId] = useState<string>("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
+  const [bookmarkedJobs, setBookmarkedJobs] = useState<number[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [loading, setLoading] = useState(true);
   const [suggestion, setSuggestion] = useState(true);
@@ -295,6 +298,30 @@ export default function ChatInterface() {
     }
   };
 
+  const toggleBookmark = async (index: number, job: Job) => {
+    const isAlreadyBookmarked = bookmarkedJobs.includes(index);
+
+    setBookmarkedJobs((prev) =>
+      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index],
+    );
+
+    try {
+      await fetch("/api/saved-jobs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(job),
+      });
+    } catch (err) {
+      console.error("Bookmark failed:", err);
+      // Optionally rollback UI
+      setBookmarkedJobs((prev) =>
+        isAlreadyBookmarked
+          ? [...prev, index]
+          : prev.filter((i) => i !== index),
+      );
+    }
+  };
+
   const renderMessage = (message: Message) => {
     const isUser = message.role === "user";
 
@@ -342,66 +369,92 @@ export default function ChatInterface() {
                   <p className="my-3 text-[15px]">{message.content}</p>
                 </div>
                 <div className="grid grid-cols-1 gap-3 px-3 md:grid-cols-2 md:px-0">
-                  {message.metadata?.jobs?.map((job: Job, index: number) => (
-                    <Card
-                      key={index}
-                      className="group h-full cursor-pointer border border-slate-700/50 bg-slate-900/60 p-0 backdrop-blur-sm transition-all duration-300 hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-600/20"
-                    >
-                      <CardContent className="relative flex h-full flex-col p-3">
-                        {/* Subtle glow effect on hover */}
-                        <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+                  {message.metadata?.jobs?.map((job: Job, index: number) => {
+                    const isBookmarked = bookmarkedJobs.includes(index);
 
-                        <div className="relative z-10 mb-2 flex flex-1 items-start justify-between">
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center justify-between">
-                              <Link href={job.link} target="_blank">
-                                <h4 className="flex items-center gap-2 font-semibold text-slate-100">
-                                  <Briefcase className="h-4 w-4 flex-shrink-0 text-blue-400 drop-shadow-sm" />
-                                  <span className="truncate text-sm hover:text-amber-100 hover:underline hover:underline-offset-4">
-                                    {job.title}
-                                  </span>
-                                </h4>
-                              </Link>
+                    return (
+                      <Card
+                        key={index}
+                        className="group h-full cursor-pointer border border-slate-700/50 bg-slate-900/60 p-0 backdrop-blur-sm transition-all duration-300 hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-600/20"
+                      >
+                        <CardContent className="relative flex h-full flex-col p-3">
+                          {/* Subtle glow effect on hover */}
+                          <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
 
-                              <Bookmark className="h-4 w-4 text-slate-300" />
+                          <div className="relative z-10 mb-2 flex flex-1 items-start justify-between">
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center justify-between">
+                                <Link href={job.link} target="_blank">
+                                  <h4 className="flex items-center gap-2 font-semibold text-slate-100">
+                                    <Briefcase className="h-4 w-4 flex-shrink-0 text-blue-400 drop-shadow-sm" />
+                                    <span className="truncate text-sm hover:text-amber-100 hover:underline hover:underline-offset-4">
+                                      {job.title}
+                                    </span>
+                                  </h4>
+                                </Link>
+
+                                {/* <Bookmark className="h-4 w-4 text-slate-300" /> */}
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    toggleBookmark(index, job).catch(
+                                      console.error,
+                                    );
+                                  }}
+                                  className={cn(
+                                    "h-5 w-5 p-0 transition-all duration-75 hover:bg-slate-800 hover:text-white",
+                                    isBookmarked
+                                      ? "text-amber-400 hover:text-amber-400"
+                                      : "text-slate-400 opacity-0 group-hover:opacity-100",
+                                  )}
+                                >
+                                  {isBookmarked ? (
+                                    <Bookmark className="h-4 w-4" />
+                                  ) : (
+                                    <BookmarkPlus className="h-4 w-4" />
+                                  )}
+                                </Button>
+                              </div>
+                              <p className="truncate text-sm text-slate-400">
+                                {job.company}
+                              </p>
                             </div>
-                            <p className="truncate text-sm text-slate-400">
-                              {job.company}
-                            </p>
                           </div>
-                        </div>
 
-                        <div className="relative z-10 mb-3 flex items-center gap-4 text-sm text-slate-400">
-                          <span className="flex min-w-0 flex-1 items-center gap-1">
-                            <MapPin className="h-3 w-3 flex-shrink-0" />
-                            <span className="truncate">{job.location}</span>
-                          </span>
-                          <span className="flex flex-shrink-0 items-center gap-1">
-                            <DollarSign className="h-3 w-3" />
-                            <span className="text-xs">{job.salary}</span>
-                          </span>
-                        </div>
+                          <div className="relative z-10 mb-3 flex items-center gap-4 text-sm text-slate-400">
+                            <span className="flex min-w-0 flex-1 items-center gap-1">
+                              <MapPin className="h-3 w-3 flex-shrink-0" />
+                              <span className="truncate">{job.location}</span>
+                            </span>
+                            <span className="flex flex-shrink-0 items-center gap-1">
+                              <DollarSign className="h-3 w-3" />
+                              <span className="text-xs">{job.salary}</span>
+                            </span>
+                          </div>
 
-                        <div className="relative z-10 flex flex-wrap gap-1">
-                          {job.tags
-                            .slice(0, 3)
-                            .map((tag: string, tagIndex: number) => (
-                              <Badge
-                                key={tagIndex}
-                                className="border-blue-800/50 bg-blue-900/40 text-xs text-blue-300 shadow-sm backdrop-blur-sm hover:bg-blue-800/50"
-                              >
-                                {tag}
+                          <div className="relative z-10 flex flex-wrap gap-1">
+                            {job.tags
+                              .slice(0, 3)
+                              .map((tag: string, tagIndex: number) => (
+                                <Badge
+                                  key={tagIndex}
+                                  className="border-blue-800/50 bg-blue-900/40 text-xs text-blue-300 shadow-sm backdrop-blur-sm hover:bg-blue-800/50"
+                                >
+                                  {tag}
+                                </Badge>
+                              ))}
+                            {job.tags.length > 3 && (
+                              <Badge className="border-slate-600/50 bg-slate-800/40 text-xs text-slate-400">
+                                +{job.tags.length - 3}
                               </Badge>
-                            ))}
-                          {job.tags.length > 3 && (
-                            <Badge className="border-slate-600/50 bg-slate-800/40 text-xs text-slate-400">
-                              +{job.tags.length - 3}
-                            </Badge>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
                 </div>
                 <div className="mt-1 text-left">
                   <span className="text-xs font-medium text-blue-300">
