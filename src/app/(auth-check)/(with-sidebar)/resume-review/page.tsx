@@ -55,19 +55,6 @@ export interface CVAnalysis {
   suggestions: string[];
 }
 
-function getGradient(score: number) {
-  if (score < 40) {
-    // Red to orange
-    return "linear-gradient(to right, #ef4444, #f97316)";
-  } else if (score < 70) {
-    // Orange to yellow
-    return "linear-gradient(to right, #f59e0b, #facc15)";
-  } else {
-    // Yellow to green
-    return "linear-gradient(to right, #facc15, #22c55e)";
-  }
-}
-
 export default function CVReviewPage() {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
