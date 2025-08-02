@@ -29,11 +29,7 @@ const items = [
     url: "/chat",
     icon: MessageCircle,
   },
-  {
-    title: "Explore Careers",
-    url: "/explore-careers",
-    icon: Compass,
-  },
+
   {
     title: "CV / Resume Reviewer",
     url: "/resume-review",
@@ -43,6 +39,11 @@ const items = [
     title: "Saved Jobs",
     url: "/saved-jobs",
     icon: Bookmark,
+  },
+  {
+    title: "Explore Careers",
+    url: "/explore-careers",
+    icon: Compass,
   },
   {
     title: "Settings",
