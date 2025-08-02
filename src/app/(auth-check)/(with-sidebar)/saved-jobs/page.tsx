@@ -106,7 +106,7 @@ export default function SavedJobsPage() {
       <SidebarInset className="relative z-10 w-full flex-1">
         <div className="flex h-full w-full flex-col bg-slate-950">
           {/* Header */}
-          <div className="to border-b border-slate-800/50 bg-slate-900/50 bg-gradient-to-b from-fuchsia-900/10 backdrop-blur-xl">
+          <div className="to border-b border-slate-800/50 bg-slate-800/10 bg-gradient-to-b from-fuchsia-900/10 backdrop-blur-xl">
             <div className="flex items-center justify-between px-6 py-2">
               <div className="flex items-center gap-4">
                 <SidebarTrigger className="rounded-lg border border-slate-600/30 bg-slate-800/50 p-2 text-slate-300 shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-blue-500/50 hover:bg-blue-950/50 hover:text-blue-300 md:hidden" />
@@ -126,7 +126,7 @@ export default function SavedJobsPage() {
           </div>
 
           {/* Filters and Search */}
-          <div className="border-b border-slate-800/50 bg-slate-900/50 backdrop-blur-sm">
+          <div className="border-b border-slate-800/50 backdrop-blur-sm">
             <div className="px-6 py-2">
               <div className="flex flex-col gap-4 sm:flex-row">
                 {/* Search */}

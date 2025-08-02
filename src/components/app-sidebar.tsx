@@ -1,3 +1,5 @@
+"use client";
+
 import { Compass, Map, Bookmark, Settings, MessageCircle } from "lucide-react";
 import {
   Sidebar,
@@ -14,6 +16,8 @@ import {
 import Image from "next/image";
 import SidebarUserCard from "./ui/sidebar-usercard";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 type AppSidebarProps = {
   user: {
@@ -136,13 +140,17 @@ const SidebarLogo = () => {
 export default SidebarLogo;
 
 const SidebarNavigationItems = () => {
+  const pathname = usePathname();
   return (
     <SidebarMenu>
       {items.map((item) => (
         <SidebarMenuItem key={item.title}>
           <SidebarMenuButton
             asChild
-            className="text-slate-300 hover:bg-blue-950/50 hover:text-blue-300 active:bg-blue-950 active:text-blue-300 data-[active=true]:border-r-2 data-[active=true]:border-blue-500 data-[active=true]:bg-blue-900/30 data-[active=true]:text-blue-300"
+            className={cn(
+              "text-slate-300 hover:bg-blue-950/50 hover:text-blue-300 active:bg-blue-950 active:text-blue-300 data-[active=true]:border-r-2 data-[active=true]:border-blue-500 data-[active=true]:bg-blue-900/30 data-[active=true]:text-blue-300",
+              pathname === item.url && "bg-blue-950/50 text-blue-300",
+            )}
           >
             <Link href={item.url} className="flex items-center gap-3 px-3 py-2">
               <item.icon className="h-5 w-5" />

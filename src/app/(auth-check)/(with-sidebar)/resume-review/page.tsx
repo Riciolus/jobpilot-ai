@@ -54,93 +54,6 @@ export interface CVAnalysis {
   suggestions: string[];
 }
 
-const mockAnalysis: CVAnalysis = {
-  overallScore: 85,
-  sections: [
-    {
-      name: "Contact Information",
-      score: 90,
-      status: "excellent",
-      feedback:
-        "John has provided clear and complete contact information, including email, phone number, and LinkedIn profile. This is excellent for making it easy for potential employers to reach out.",
-    },
-    {
-      name: "Professional Summary",
-      score: 85,
-      status: "good",
-      feedback:
-        "The professional summary is well-written and highlights relevant skills and experience. It could be improved by quantifying achievements more and using action verbs.",
-    },
-    {
-      name: "Work Experience",
-      score: 90,
-      status: "excellent",
-      feedback:
-        "John has detailed and impressive work experience, including specific achievements and responsibilities. This section is excellent and demonstrates his capabilities effectively.",
-    },
-    {
-      name: "Skills",
-      score: 80,
-      status: "good",
-      feedback:
-        "The skills listed are relevant to the job, but including more technical skills and tools could strengthen this section. Also, consider listing proficiency levels.",
-    },
-    {
-      name: "Education",
-      score: 80,
-      status: "good",
-      feedback:
-        "The education section is concise and includes the degree, institution, and dates. To improve, consider adding GPA if it's strong or relevant coursework.",
-    },
-    {
-      name: "Certifications",
-      score: 100,
-      status: "excellent",
-      feedback:
-        "John has included a relevant certification, which is a great addition to his CV. This section is excellent and shows his commitment to professional development.",
-    },
-  ],
-  strengths: [
-    "Clear and complete contact information",
-    "Detailed and impressive work experience",
-    "Relevant skills listed",
-    "Professional certification included",
-  ],
-  improvements: [
-    "Quantify achievements more in the professional summary",
-    "Add more technical skills and tools to the Skills section",
-    "Consider including GPA or relevant coursework in the Education section",
-    "List proficiency levels for skills",
-  ],
-  keywords: {
-    present: [
-      "JavaScript",
-      "React",
-      "HTML",
-      "CSS",
-      "Git",
-      "Agile",
-      "Team Leadership",
-      "Project Management",
-      "Scrum Fundamentals Certified",
-    ],
-    missing: [
-      "Responsive Design",
-      "API Integration",
-      "Version Control",
-      "Testing/Debugging",
-      "UI/UX Design",
-    ],
-  },
-  suggestions: [
-    "Quantify achievements more in the professional summary to show impact and results.",
-    "Add more technical skills and tools to the Skills section, especially those relevant to the job description.",
-    "Consider including GPA or relevant coursework in the Education section to provide more context about academic performance.",
-    "List proficiency levels for skills to give a better idea of expertise.",
-    "Include additional relevant keywords like 'Responsive Design', 'API Integration', 'Version Control', 'Testing/Debugging', and 'UI/UX Design' in the Skills or Work Experience sections.",
-  ],
-};
-
 export default function CVReviewPage() {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -304,7 +217,7 @@ export default function CVReviewPage() {
       <SidebarInset className="relative z-10 w-full flex-1">
         <div className="flex h-full w-full flex-col bg-slate-950">
           {/* Header */}
-          <div className="border-b border-slate-800/50 bg-slate-900/80 bg-gradient-to-b from-fuchsia-900/10 backdrop-blur-xl">
+          <div className="border-b border-slate-800/50 bg-slate-800/10 bg-gradient-to-b from-fuchsia-900/10 backdrop-blur-xl">
             <div className="flex items-center justify-between px-6 py-2">
               <div className="flex items-center gap-4">
                 <SidebarTrigger className="rounded-lg border border-slate-600/30 bg-slate-800/50 p-2 text-slate-300 shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-blue-500/50 hover:bg-blue-950/50 hover:text-blue-300 md:hidden" />
