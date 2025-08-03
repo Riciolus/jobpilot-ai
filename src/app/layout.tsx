@@ -1,7 +1,7 @@
 import "@/styles/globals.css";
 
 import { type Metadata } from "next";
-import { Geist, Playfair_Display } from "next/font/google";
+import { Geist, Orbitron } from "next/font/google";
 
 export const metadata: Metadata = {
   title: "JobPilot - 🚀",
@@ -15,17 +15,13 @@ const geist = Geist({
   variable: "--font-geist-sans",
 });
 
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800", "900"], // Optional: choose weights
-  variable: "--font-playfair", // CSS variable name
-});
+const orbitron = Orbitron({ subsets: ["latin"], variable: "--font-orbitron" });
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${geist.variable} ${playfair.variable}`}>
+    <html lang="en" className={`${geist.variable} ${orbitron.variable}`}>
       <body>{children}</body>
     </html>
   );

@@ -137,7 +137,7 @@ const MarkdownComponents: Components = {
 
 const MessageContent = ({ content }: { content: string }) => (
   <Markdown
-    className="prose dark:prose-invert prose-sm max-w-none text-sm md:text-[15.5px]"
+    className="prose dark:prose-invert prose-sm max-w-none text-sm md:text-[14.5px]"
     components={MarkdownComponents}
   >
     {content}
@@ -370,7 +370,7 @@ export default function ChatInterface() {
             {message.type === "job-card" ? (
               <div>
                 <div className="mb-5 space-y-3">
-                  <p className="my-3 text-[15px]">{message.content}</p>
+                  <p className="my-3 text-[14.5px]">{message.content}</p>
                 </div>
                 <div className="grid grid-cols-1 gap-3 px-3 md:grid-cols-2 md:px-0">
                   {message.metadata?.jobs?.map((job: Job, index: number) => {

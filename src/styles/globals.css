@@ -8,7 +8,7 @@
     var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 
-  --font-playfair: var(--font-playfair-display), Georgia, serif;
+  --font-orbitron: var(--font-orbitron);
 }
 
 @theme inline {

@@ -66,7 +66,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
         <SidebarLogo />
       </SidebarHeader>
 
-      <SidebarContent className="bg-slate-900">
+      <SidebarContent className="bg-slate-900 pt-3">
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarNavigationItems />
@@ -125,9 +125,9 @@ const SidebarLogo = () => {
       </div>
 
       {/* Modern typography */}
-      <div className="relative z-10 ml-12">
-        <h1 className="text-xl font-bold tracking-wide text-white/90 transition-all duration-300 group-hover:text-white">
-          Job Pilot
+      <div className="relative z-10 ml-12 flex items-center gap-1">
+        <h1 className="font-orbitron text-xl font-bold tracking-wide text-white/90 italic transition-all duration-300 group-hover:text-white">
+          Jobpilot AI
         </h1>
       </div>
 
