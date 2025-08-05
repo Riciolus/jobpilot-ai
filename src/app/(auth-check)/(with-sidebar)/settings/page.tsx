@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,6 +30,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import type { UserProfileForm } from "../../onboarding/page";
+import { useSession } from "next-auth/react";
 
 const skillSuggestions = [
   "JavaScript",
@@ -65,10 +66,6 @@ const industryOptions = [
   "E-commerce",
   "Media",
   "Non-profit",
-  "Manufacturing",
-  "Real Estate",
-  "Government",
-  "Startup",
 ];
 
 const growthAreaOptions = [
@@ -84,31 +81,38 @@ const growthAreaOptions = [
   "Public Speaking",
 ];
 
-// Mock user data
-const mockUserData: UserProfileForm = {
-  fullName: "John Doe",
-  age: "25",
-  educationLevel: "S1",
-  major: "Computer Science",
-  location: "San Francisco, CA",
-  currentStatus: "Working",
-  pastJobs:
-    "Software Engineer at TechCorp (2022-2024), Frontend Developer Intern at StartupXYZ (2021)",
-  skills: ["JavaScript", "React", "Node.js", "Python", "SQL"],
-  desiredIndustry: "Technology",
-  targetRole: "Senior Software Engineer",
-  growthAreas: ["Leadership", "Technical Skills", "Communication"],
-  userId: "user123",
-};
-
 export default function SettingsPage() {
-  const [formData, setFormData] = useState<UserProfileForm>(mockUserData);
+  const [formData, setFormData] = useState<UserProfileForm>(
+    {} as UserProfileForm,
+  );
   const [skillInput, setSkillInput] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const session = useSession();
   const [saveStatus, setSaveStatus] = useState<"idle" | "success" | "error">(
     "idle",
   );
+
+  useEffect(() => {
+    void (async () => {
+      try {
+        const res = await fetch("/api/user/profile", { method: "GET" });
+        const data = (await res.json()) as UserProfileForm;
+
+        if (!res.ok) {
+          throw new Error();
+        }
+
+        console.log(data);
+        setFormData(data);
+      } catch (err) {
+        console.error("Failed to get conversation:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    })();
+  }, []);
 
   const updateFormData = (
     field: keyof UserProfileForm,
@@ -145,26 +149,32 @@ export default function SettingsPage() {
 
   const handleSave = async () => {
     setIsSaving(true);
-    setSaveStatus("idle");
+    setSaveStatus("success");
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsSaving(false);
-      setSaveStatus("success");
-      setIsEditing(false);
+    try {
+      const res = await fetch("/api/user/profile", {
+        method: "POST",
+        body: JSON.stringify(formData),
+      });
 
-      // Reset status after 3 seconds
-      setTimeout(() => {
-        setSaveStatus("idle");
-      }, 3000);
-    }, 1500);
+      if (!res.ok) {
+        throw new Error();
+      }
+    } catch (err) {
+      console.error("Failed to update profile:", err);
+    } finally {
+      setSaveStatus("idle");
+    }
   };
 
   const handleCancel = () => {
-    setFormData(mockUserData); // Reset to original data
     setIsEditing(false);
     setSaveStatus("idle");
   };
+
+  if (isLoading) {
+    return <div className="h-screen w-screen bg-slate-950"></div>;
+  }
 
   return (
     <div className="relative flex h-screen w-full overflow-hidden">
@@ -212,7 +222,7 @@ export default function SettingsPage() {
                       variant="outline"
                       size="sm"
                       onClick={handleCancel}
-                      className="border-slate-600/50 bg-slate-800/30 text-sm text-slate-300 hover:bg-slate-800/50"
+                      className="border-slate-600/50 bg-slate-800/30 text-sm text-slate-300 hover:bg-slate-800/50 hover:text-slate-100"
                     >
                       <X className="mr-1 h-4 w-4" />
                       Cancel
@@ -254,7 +264,7 @@ export default function SettingsPage() {
                   <div className="flex items-center gap-4">
                     <div className="relative">
                       <Avatar className="h-16 w-16 shadow-lg ring-2 shadow-blue-600/20 ring-blue-500/20">
-                        <AvatarImage src="/placeholder.svg?height=64&width=64" />
+                        <AvatarImage src={session.data?.user.image ?? ""} />
                         <AvatarFallback className="bg-gradient-to-br from-blue-600 to-blue-700 text-lg text-white">
                           <User className="h-8 w-8" />
                         </AvatarFallback>
@@ -279,7 +289,7 @@ export default function SettingsPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="mt-2 border-slate-600/50 bg-slate-800/30 text-xs text-slate-300 hover:bg-slate-800/50"
+                          className="mt-2 border-slate-600/50 bg-slate-800/30 text-xs text-slate-300 hover:bg-slate-800/50 hover:text-slate-100"
                         >
                           <Upload className="mr-1 h-3 w-3" />
                           Change Photo
@@ -348,7 +358,7 @@ export default function SettingsPage() {
                         <SelectTrigger className="border-slate-700/50 bg-slate-800/50 text-sm text-slate-100 focus:border-blue-500 focus:ring-blue-500/20 disabled:opacity-60">
                           <SelectValue placeholder="Select education level" />
                         </SelectTrigger>
-                        <SelectContent className="border-slate-700 bg-slate-800">
+                        <SelectContent className="border-slate-700 bg-slate-800 text-slate-100">
                           <SelectItem value="High School">
                             High School
                           </SelectItem>
@@ -488,9 +498,12 @@ export default function SettingsPage() {
                         <SelectTrigger className="border-slate-700/50 bg-slate-800/50 text-sm text-slate-100 focus:border-blue-500 focus:ring-blue-500/20 disabled:opacity-60">
                           <SelectValue placeholder="Select industry" />
                         </SelectTrigger>
-                        <SelectContent className="border-slate-700 bg-slate-800">
+                        <SelectContent className="border-slate-700 bg-slate-800 text-slate-100">
                           {industryOptions.map((industry) => (
-                            <SelectItem key={industry} value={industry}>
+                            <SelectItem
+                              key={industry}
+                              value={industry.toLowerCase()}
+                            >
                               {industry}
                             </SelectItem>
                           ))}
