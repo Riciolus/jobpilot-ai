@@ -1,7 +1,7 @@
-import type { UserProfileForm } from "@/app/(auth-check)/onboarding/page";
+import { userProfileSchema, type UserProfileForm } from "@/lib/schema";
 import { auth } from "@/server/auth";
 import { db } from "@/server/db";
-import { userProfiles } from "@/server/db/schema";
+import { userProfiles, users } from "@/server/db/schema";
 import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 
@@ -39,39 +39,67 @@ export async function GET() {
   const profile = {
     ...rawProfile,
     skills: parseTextArray(rawProfile.skills),
-    pastJobs: parseTextArray(rawProfile.pastJobs),
     growthAreas: parseTextArray(rawProfile.growthAreas),
   };
 
   return NextResponse.json(profile);
 }
 
-// POST: Create or update user profile
+// POST: Create user profile
 export async function POST(req: NextRequest) {
   const session = await auth();
+
+  if (!session || !session.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const body = (await req.json()) as UserProfileForm;
+
+    const result = userProfileSchema.safeParse(body);
+
+    if (!result.success) {
+      return NextResponse.json(
+        { status: false, errors: result.error.format() },
+        { status: 400 },
+      );
+    }
+
+    const payload = {
+      ...body,
+      userId: session.user.id,
+      age: parseInt(body.age, 10),
+      skills: JSON.stringify(body.skills),
+      growthAreas: JSON.stringify(body.growthAreas),
+    };
+
+    await db.insert(userProfiles).values(payload);
+    await db
+      .update(users)
+      .set({ isOnboardingComplete: true })
+      .where(eq(users.id, body.userId));
+
+    return NextResponse.json({ status: true });
+  } catch (error) {
+    return NextResponse.json({ status: false, error }, { status: 500 });
+  }
+}
+
+// PATCH: Update user profile
+export async function PATCH(req: NextRequest) {
+  const session = await auth();
+
   if (!session || !session.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const body = (await req.json()) as UserProfileForm;
-  const {
-    fullName,
-    age,
-    educationLevel,
-    major,
-    location,
-    currentStatus,
-    pastJobs,
-    skills,
-    desiredIndustry,
-    targetRole,
-    growthAreas,
-  } = body;
 
-  // Simple manual validation (expand as needed)
-  if (!educationLevel || !currentStatus) {
+  const result = userProfileSchema.safeParse(body);
+
+  if (!result.success) {
     return NextResponse.json(
-      { error: "Missing required fields: educationLevel, currentStatus" },
+      { status: false, errors: result.error.format() },
       { status: 400 },
     );
   }
@@ -86,22 +114,15 @@ export async function POST(req: NextRequest) {
     await db
       .update(userProfiles)
       .set({
-        fullName,
-        age: parseInt(age, 10),
-        educationLevel,
-        major,
-        location,
-        currentStatus,
-        pastJobs,
-        skills: JSON.stringify(skills),
-        desiredIndustry,
-        targetRole,
-        growthAreas: JSON.stringify(growthAreas),
+        ...body,
+        skills: JSON.stringify(body.skills),
+        age: parseInt(body.age, 10),
+        growthAreas: JSON.stringify(body.growthAreas),
         updatedAt: new Date(),
       })
       .where(eq(userProfiles.userId, session.user.id));
   } else {
-    return NextResponse.json({ success: false });
+    return NextResponse.json({ success: false }, { status: 404 });
   }
 
   return NextResponse.json({ success: true });

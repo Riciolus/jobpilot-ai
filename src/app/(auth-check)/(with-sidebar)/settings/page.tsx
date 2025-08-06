@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,8 +29,8 @@ import {
   CheckCircle,
   AlertCircle,
 } from "lucide-react";
-import type { UserProfileForm } from "../../onboarding/page";
 import { useSession } from "next-auth/react";
+import { userProfileSchema, type UserProfileForm } from "@/lib/schema";
 
 const skillSuggestions = [
   "JavaScript",
@@ -85,6 +85,8 @@ export default function SettingsPage() {
   const [formData, setFormData] = useState<UserProfileForm>(
     {} as UserProfileForm,
   );
+
+  const formDataRef = useRef<UserProfileForm>(formData);
   const [skillInput, setSkillInput] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -104,7 +106,7 @@ export default function SettingsPage() {
           throw new Error();
         }
 
-        console.log(data);
+        formDataRef.current = data;
         setFormData(data);
       } catch (err) {
         console.error("Failed to get conversation:", err);
@@ -149,20 +151,35 @@ export default function SettingsPage() {
 
   const handleSave = async () => {
     setIsSaving(true);
-    setSaveStatus("success");
 
     try {
+      const parseResult = userProfileSchema.safeParse({
+        ...formData,
+        age: formData.age.toString(),
+      });
+
+      if (!parseResult.success) {
+        console.error("Validation failed:", parseResult.error);
+        return;
+      }
+
       const res = await fetch("/api/user/profile", {
-        method: "POST",
-        body: JSON.stringify(formData),
+        method: "PATCH",
+        body: JSON.stringify(parseResult.data),
       });
 
       if (!res.ok) {
+        setFormData(formDataRef.current);
+        setSaveStatus("error");
         throw new Error();
       }
+
+      setSaveStatus("success");
     } catch (err) {
       console.error("Failed to update profile:", err);
     } finally {
+      setIsEditing(false);
+      setIsSaving(false);
       setSaveStatus("idle");
     }
   };

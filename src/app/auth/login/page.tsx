@@ -26,7 +26,7 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate login process
+    // Simulate login pro1cess
     setTimeout(() => {
       setIsLoading(false);
     }, 2000);

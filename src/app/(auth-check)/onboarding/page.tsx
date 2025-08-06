@@ -22,26 +22,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { userProfileSchema, type UserProfileForm } from "@/lib/schema";
 
-export interface UserProfileForm {
-  fullName: string;
-  age: string;
-  educationLevel: "High School" | "D3" | "S1" | "S2" | "";
-  major: string;
-  location: string;
-
-  currentStatus: "Student" | "Fresh Graduate" | "Working" | "Career Switcher";
-  pastJobs: string;
-  skills: string[];
-
-  desiredIndustry: string;
-  targetRole: string;
-  growthAreas: string[];
-
-  userId: string;
-}
-
-// Define the possible form field types
 type FormValue = string | string[];
 
 type SubmitProfileResponse = {
@@ -145,20 +127,22 @@ export default function OnboardingWizard() {
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
     } else {
-      const dbPayload = {
+      const parseResult = userProfileSchema.safeParse({
         ...formData,
         userId: session?.user?.id,
-        age: parseInt(formData.age, 10),
-        skills: formData.skills,
-        growthAreas: formData.growthAreas,
-      };
+      });
 
-      const res = await fetch("/api/submit-profile", {
+      if (!parseResult.success) {
+        console.error("Validation failed:", parseResult.error);
+        return;
+      }
+
+      const res = await fetch("/api/user/profile", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(dbPayload),
+        body: JSON.stringify(parseResult.data),
       });
 
       const result = (await res.json()) as SubmitProfileResponse;

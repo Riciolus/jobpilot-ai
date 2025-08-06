@@ -126,7 +126,6 @@ export const userProfiles = createTable("user_profile", (d) => ({
   targetRole: d.varchar({ length: 255 }),
   growthAreas: d.text(),
 
-  chatInitiated: d.boolean().default(false),
   createdAt: d.timestamp({ withTimezone: true }).defaultNow().notNull(),
   updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
 }));
