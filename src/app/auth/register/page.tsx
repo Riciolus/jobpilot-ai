@@ -17,6 +17,8 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { signIn } from "next-auth/react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -30,6 +32,7 @@ export default function RegisterPage() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const isMobile = useIsMobile();
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -49,9 +52,13 @@ export default function RegisterPage() {
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-950 p-4">
       {/* Background Glow Effects */}
-      <div className="absolute top-1/4 right-1/4 h-96 w-96 animate-pulse rounded-full bg-purple-500/20 blur-3xl"></div>
-      <div className="absolute bottom-1/4 left-1/4 h-80 w-80 animate-pulse rounded-full bg-blue-500/15 blur-3xl delay-1000"></div>
-      <div className="absolute top-1/2 left-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 transform rounded-full bg-gradient-to-r from-purple-500/10 to-blue-500/10 blur-3xl"></div>
+      {!isMobile && (
+        <>
+          <div className="absolute top-1/4 right-1/4 h-96 w-96 animate-pulse rounded-full bg-purple-500/20 blur-3xl"></div>
+          <div className="absolute bottom-1/4 left-1/4 h-80 w-80 animate-pulse rounded-full bg-blue-500/15 blur-3xl delay-1000"></div>
+          <div className="absolute top-1/2 left-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 transform rounded-full bg-gradient-to-r from-purple-500/10 to-blue-500/10 blur-3xl"></div>
+        </>
+      )}
 
       {/* Back to Home */}
       <Link
@@ -63,7 +70,12 @@ export default function RegisterPage() {
       </Link>
 
       {/* Register Card */}
-      <Card className="relative z-10 w-full max-w-md border-slate-800/50 bg-slate-900/50 shadow-2xl shadow-black/20 backdrop-blur-xl">
+      <Card
+        className={cn(
+          "relative z-10 w-full max-w-md border-slate-800/50 bg-slate-900/50 shadow-2xl shadow-black/20",
+          !isMobile && "backdrop-blur-xl",
+        )}
+      >
         <CardHeader className="space-y-4 text-center">
           {/* Logo */}
           <div className="flex justify-center">

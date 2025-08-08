@@ -26,6 +26,7 @@ import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { cn, fetchOrCreateConversation } from "@/lib/utils";
 import ReactMarkdown, { type Components } from "react-markdown";
 import Link from "next/link";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export interface Job {
   title: string;
@@ -152,6 +153,7 @@ export default function ChatInterface() {
   const [isTyping, setIsTyping] = useState(false);
   const [loading, setLoading] = useState(true);
   const [suggestion, setSuggestion] = useState(true);
+  const isMobile = useIsMobile();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -342,7 +344,7 @@ export default function ChatInterface() {
             : "flex-col items-center justify-center md:flex-row md:justify-start",
         )}
       >
-        {!isUser && (
+        {!isUser && !isMobile && (
           <div className="self-start">
             <Avatar className="mt-1 h-8 w-8 shadow-lg shadow-blue-600/20 ring-blue-500/20">
               <AvatarFallback className="border border-blue-800/50 bg-gradient-to-br from-blue-900/80 to-blue-800/60 text-blue-300 backdrop-blur-sm">
@@ -584,10 +586,19 @@ export default function ChatInterface() {
           )}
           {/* Input Area */}
           <div className="relative">
-            <div className="animate-pin absolute -bottom-36 left-1/4 h-56 w-96 animate-pulse rounded-full bg-fuchsia-400/30 blur-3xl"></div>
-            <div className="animate-pin absolute right-1/4 -bottom-36 h-56 w-72 animate-pulse rounded-full bg-yellow-400/30 blur-3xl"></div>
+            {!isMobile && (
+              <>
+                <div className="animate-pin absolute -bottom-36 left-1/4 h-56 w-96 animate-pulse rounded-full bg-fuchsia-400/30 blur-3xl"></div>
+                <div className="animate-pin absolute right-1/4 -bottom-36 h-56 w-72 animate-pulse rounded-full bg-yellow-400/30 blur-3xl"></div>
+              </>
+            )}
             <div className="mx-auto mb-0 h-fit max-w-5xl md:mb-3">
-              <div className="rounded-t-2xl border border-slate-700/50 bg-slate-900/80 shadow-2xl ring-1 shadow-black/20 ring-slate-800/50 backdrop-blur-xl md:rounded-2xl">
+              <div
+                className={cn(
+                  "rounded-t-2xl border border-slate-700/50 bg-slate-900/80 shadow-2xl ring-1 shadow-black/20 ring-slate-800/50 md:rounded-2xl",
+                  !isMobile && "backdrop-blur-xl",
+                )}
+              >
                 <div className="p-4">
                   <div className="flex items-end gap-3">
                     <div className="relative flex-1">

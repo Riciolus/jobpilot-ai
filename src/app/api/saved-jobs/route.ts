@@ -45,8 +45,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    console.log({ session });
-
     const body = (await req.json()) as SavedJob;
 
     const { title, company, location, salary, tags, link, savedAt } = body;
