@@ -1,29 +1,45 @@
-# Create T3 App
+# Job Copilot 🚀
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+Job Copilot is your AI-powered career assistant — helping you chat with a career advisor, review your CV, and find relevant job opportunities.  
+Think of it as your personal recruiter, available 24/7.
 
-## What's next? How do I make an app with this?
+## ✨ Features
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+- **💬 AI Chat** — Get instant career advice and guidance tailored to you.
+- **📄 CV Reviewer** — Upload your CV and receive actionable improvement tips.
+- **🔍 Job Search** — Find job listings that match your skills and preferences.
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+## 🛠 Tech Stack
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+- **Frontend:** [Next.js 15](https://nextjs.org/) with App Router
+- **Styling:** [Tailwind CSS](https://tailwindcss.com/)
+- **State Management:** [Zustand](https://zustand-demo.pmnd.rs/)
+- **Backend & Auth:** [Supabase](https://supabase.com/)
+- **Validation:** [Zod](https://zod.dev/)
+- **3D Graphics:** [Three.js](https://threejs.org/) / [react-three-fiber](https://github.com/pmndrs/react-three-fiber)
 
-## Learn More
+## 🚀 Getting Started
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+```bash
+git clone https://github.com/YOUR_USERNAME/jobcopilot.git
+cd jobcopilot
+npm install
+```
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+Create a .env.local file and add your credentials:
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+```
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE"
+GOOGLE_CLIENT_ID="your_google_client_id"
+GOOGLE_CLIENT_SECRET="your_google_client_secret"
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your_nextauth_secret"
+REPLICATE_API_TOKEN="your_replicate_api_token"
+BROWSERLESS_TOKEN="your_browserless_token"
+```
 
-## How do I deploy this?
+Run the Development Server
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+```
+npm run dev
+```
