@@ -67,42 +67,17 @@ export default function Home() {
     : "/videos/landing-page-bg2.webm";
   return (
     <div className="min-h-screen text-slate-100">
-      <AnimatePresence>
-        {!isVideoReady ? (
-          <motion.div
-            key="loader"
-            initial={{ opacity: 1 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.8 }}
-            className="absolute inset-0 z-50 flex items-center justify-center bg-slate-950"
-          >
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-xl text-white"
-            >
-              <div className="flex items-center gap-3">
-                <div>
-                  <Image
-                    src={"/images/Rocket.png"}
-                    alt="rocket"
-                    width={30}
-                    height={30}
-                  />
-                </div>
-                <span className="text-xl font-bold text-slate-100">
-                  Welcome to JobPilot
-                </span>
-              </div>
-            </motion.div>
-          </motion.div>
-        ) : (
-          <Navbar />
-        )}
-      </AnimatePresence>
+      {!isVideoReady && (
+        <Image
+          src="/images/landing-page-bg.png"
+          alt="background"
+          fill
+          className="object-cover" // or object-contain
+          priority
+        ></Image>
+      )}
+
+      <Navbar />
       {/* Hero Section with Spline Background and Glow Effects */}
       <section className="relative h-screen w-full overflow-hidden bg-slate-950">
         <video
