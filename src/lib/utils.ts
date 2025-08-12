@@ -2,15 +2,8 @@ import type { Message } from "@/app/(auth-check)/(with-sidebar)/chat/page";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { createConversation } from "./api";
-import * as mammoth from "mammoth";
-import {
-  getDocument,
-  GlobalWorkerOptions,
-  type PDFDocumentProxy,
-} from "pdfjs-dist";
+import type { PDFDocumentProxy } from "pdfjs-dist";
 import type { TextContent } from "pdfjs-dist/types/src/display/api";
-// Needed to avoid CORS issues
-GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -111,6 +104,7 @@ export async function fetchOrCreateConversation(
 }
 
 const parseDocxFile = async (file: File): Promise<string> => {
+  const mammoth = await import("mammoth");
   const arrayBuffer = await file.arrayBuffer();
   const { value: html } = await mammoth.extractRawText({ arrayBuffer });
 
@@ -118,6 +112,12 @@ const parseDocxFile = async (file: File): Promise<string> => {
 };
 
 const parsePdfFile = async (file: File): Promise<string> => {
+  const pdfjsLib = await import("pdfjs-dist");
+  const { getDocument, GlobalWorkerOptions } = pdfjsLib;
+
+  // Needed to avoid CORS issues
+  GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
+
   const arrayBuffer = await file.arrayBuffer();
   const pdf: PDFDocumentProxy = await getDocument({ data: arrayBuffer })
     .promise;
