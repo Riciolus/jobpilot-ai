@@ -26,18 +26,8 @@ import {
   type DropzoneRootProps,
 } from "react-dropzone";
 
-import * as mammoth from "mammoth";
-import {
-  getDocument,
-  GlobalWorkerOptions,
-  type PDFDocumentProxy,
-} from "pdfjs-dist";
-import type { TextContent } from "pdfjs-dist/types/src/display/api";
-import { cn } from "@/lib/utils";
+import { cn, parseCVFile } from "@/lib/utils";
 import { submitResumeForReview } from "@/lib/api";
-
-// Needed to avoid CORS issues
-GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 
 export interface CVAnalysis {
   overallScore: number;
@@ -70,50 +60,6 @@ export default function CVReviewPage() {
       setShowAnalysis(true);
     }
   }, []);
-
-  const parseDocxFile = async (file: File): Promise<string> => {
-    const arrayBuffer = await file.arrayBuffer();
-    const { value: html } = await mammoth.extractRawText({ arrayBuffer });
-
-    return html;
-  };
-
-  const parsePdfFile = async (file: File): Promise<string> => {
-    const arrayBuffer = await file.arrayBuffer();
-    const pdf: PDFDocumentProxy = await getDocument({ data: arrayBuffer })
-      .promise;
-
-    let text = "";
-
-    for (let i = 1; i <= pdf.numPages; i++) {
-      const page = await pdf.getPage(i);
-      const content: TextContent = await page.getTextContent();
-
-      const pageText = content.items
-        .map((item) => {
-          if ("str" in item) return item.str;
-          return "";
-        })
-        .join(" ");
-
-      text += pageText + "\n";
-    }
-
-    return text;
-  };
-
-  const parseCVFile = async (file: File) => {
-    const mime = file.type;
-    if (mime === "application/pdf") return await parsePdfFile(file);
-    if (
-      mime ===
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
-      mime === "application/msword"
-    ) {
-      return await parseDocxFile(file);
-    }
-    throw new Error("Unsupported file type");
-  };
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     void (async () => {

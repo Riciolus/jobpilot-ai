@@ -2,9 +2,44 @@ import type { Message } from "@/app/(auth-check)/(with-sidebar)/chat/page";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { createConversation } from "./api";
+import * as mammoth from "mammoth";
+import {
+  getDocument,
+  GlobalWorkerOptions,
+  type PDFDocumentProxy,
+} from "pdfjs-dist";
+import type { TextContent } from "pdfjs-dist/types/src/display/api";
+// Needed to avoid CORS issues
+GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
+}
+
+export function isJobSearchIntent(message: string): boolean {
+  const lowered = message.toLowerCase();
+
+  // More relaxed keyword check
+  const jobKeywords = [
+    "job",
+    "jobs",
+    "position",
+    "vacancy",
+    "hiring",
+    "opening",
+    "looking for",
+  ];
+  const likelyIntent = jobKeywords.some((kw) => lowered.includes(kw));
+
+  // Less strict question detection: only block classic informational questions
+  const likelyNotSearch =
+    lowered.startsWith("how ") ||
+    lowered.startsWith("why ") ||
+    lowered.startsWith("can i ") ||
+    lowered.endsWith("?");
+
+  // Let ambiguous ones pass through to LLM layer
+  return likelyIntent && !likelyNotSearch;
 }
 
 export async function fetchOrCreateConversation(
@@ -74,3 +109,47 @@ export async function fetchOrCreateConversation(
 
   return newConvId;
 }
+
+const parseDocxFile = async (file: File): Promise<string> => {
+  const arrayBuffer = await file.arrayBuffer();
+  const { value: html } = await mammoth.extractRawText({ arrayBuffer });
+
+  return html;
+};
+
+const parsePdfFile = async (file: File): Promise<string> => {
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf: PDFDocumentProxy = await getDocument({ data: arrayBuffer })
+    .promise;
+
+  let text = "";
+
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content: TextContent = await page.getTextContent();
+
+    const pageText = content.items
+      .map((item) => {
+        if ("str" in item) return item.str;
+        return "";
+      })
+      .join(" ");
+
+    text += pageText + "\n";
+  }
+
+  return text;
+};
+
+export const parseCVFile = async (file: File) => {
+  const mime = file.type;
+  if (mime === "application/pdf") return await parsePdfFile(file);
+  if (
+    mime ===
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+    mime === "application/msword"
+  ) {
+    return await parseDocxFile(file);
+  }
+  throw new Error("Unsupported file type");
+};
