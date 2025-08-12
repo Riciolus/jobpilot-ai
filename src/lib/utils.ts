@@ -1,6 +1,7 @@
 import type { Message } from "@/app/(auth-check)/(with-sidebar)/chat/page";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { createConversation } from "./api";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -12,13 +13,7 @@ export async function fetchOrCreateConversation(
   const convId = localStorage.getItem("conversationId");
   if (convId) return convId;
 
-  const res = await fetch("/api/chat/init", {
-    method: "POST",
-  });
-
-  if (!res.ok || !res.body) {
-    throw new Error("Failed to create conversation");
-  }
+  const res = await createConversation();
 
   let newConvId: string;
   let alreadyInitialized = false;

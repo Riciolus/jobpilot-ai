@@ -26,16 +26,12 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import type { Job } from "../chat/page";
+import { getSavedJobs, removeSavedJobs } from "@/lib/api";
 
 export interface SavedJob extends Job {
   id: string;
   savedAt: string; // or Date if you're using actual Date objects
 }
-
-type SavedJobsResponse = {
-  status: boolean;
-  jobs: SavedJob[];
-};
 
 export default function SavedJobsPage() {
   const [savedJobs, setSavedJobs] = useState<SavedJob[]>([]);
@@ -46,27 +42,20 @@ export default function SavedJobsPage() {
   useEffect(() => {
     void (async () => {
       try {
-        const res = await fetch("/api/saved-jobs");
-        const data = (await res.json()) as SavedJobsResponse;
+        const data = await getSavedJobs();
         setSavedJobs(data.jobs);
-        // setSavedJobs(data.jobs);
       } catch (err) {
-        console.error("Failed to fetch messages:", err);
+        console.error(err);
       }
     })();
   }, []);
 
   const removeJob = async (jobId: string) => {
     try {
-      await fetch("/api/saved-jobs", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: jobId }),
-      });
-    } catch (err) {
-      console.error("Bookmark failed:", err);
-    } finally {
+      await removeSavedJobs(jobId);
       setSavedJobs((prev) => prev.filter((job) => job.id !== jobId));
+    } catch (err) {
+      console.error(err);
     }
   };
 

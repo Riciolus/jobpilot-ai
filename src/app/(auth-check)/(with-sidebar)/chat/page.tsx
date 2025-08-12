@@ -27,6 +27,12 @@ import { cn, fetchOrCreateConversation } from "@/lib/utils";
 import ReactMarkdown, { type Components } from "react-markdown";
 import Link from "next/link";
 import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  getConversation,
+  getJobsRecommendation,
+  saveJob,
+  sendMessage,
+} from "@/lib/api";
 
 export interface Job {
   title: string;
@@ -176,13 +182,10 @@ export default function ChatInterface() {
       if (!conversationId) return;
 
       try {
-        const res = await fetch(
-          `/api/messages?conversationId=${conversationId}`,
-        );
-        const data = (await res.json()) as Message[];
+        const data = await getConversation(conversationId);
         setMessages(data);
       } catch (err) {
-        console.error("Failed to fetch messages:", err);
+        console.error(err);
       } finally {
         setLoading(false);
       }
@@ -221,14 +224,10 @@ export default function ChatInterface() {
 
     // 👇 Insert this block before sending to /api/messages
     if (isJobSearchIntent(currentInput)) {
-      const res = await fetch(
-        `/api/chat/get-jobs?convId=${conversationId}&userMsg=${currentInput}`,
-        {
-          method: "GET",
-        },
+      const messagePayload = await getJobsRecommendation(
+        conversationId,
+        currentInput,
       );
-
-      const messagePayload = (await res.json()) as { data: Message };
 
       setMessages((prev) => [...prev, messagePayload.data]);
       setIsTyping(false);
@@ -245,15 +244,7 @@ export default function ChatInterface() {
     setMessages((prev) => [...prev, empytAssistantMessage]);
 
     try {
-      const res = await fetch(`/api/messages`, {
-        method: "POST",
-        body: JSON.stringify(userMessage),
-      });
-
-      if (!res.ok) {
-        setMessages((prev) => prev.filter((msg) => msg.id !== userMessage.id));
-        throw new Error("Denied");
-      }
+      const res = await sendMessage(userMessage);
 
       setIsTyping(() => false);
 
@@ -285,6 +276,7 @@ export default function ChatInterface() {
       }
     } catch (err) {
       console.log("Failed to create messages:", err);
+      setMessages((prev) => prev.filter((msg) => msg.id !== userMessage.id));
     }
   };
 
@@ -305,26 +297,16 @@ export default function ChatInterface() {
   };
 
   const toggleBookmark = async (index: number, job: Job) => {
-    const isAlreadyBookmarked = bookmarkedJobs.includes(index);
-
-    setBookmarkedJobs((prev) =>
-      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index],
-    );
-
     try {
-      await fetch("/api/saved-jobs", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(job),
-      });
-    } catch (err) {
-      console.error("Bookmark failed:", err);
-      // Optionally rollback UI
+      await saveJob(job);
+
       setBookmarkedJobs((prev) =>
-        isAlreadyBookmarked
-          ? [...prev, index]
-          : prev.filter((i) => i !== index),
+        prev.includes(index)
+          ? prev.filter((i) => i !== index)
+          : [...prev, index],
       );
+    } catch (err) {
+      console.error(err);
     }
   };
 

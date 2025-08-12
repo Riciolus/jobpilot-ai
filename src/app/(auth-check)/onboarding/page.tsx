@@ -23,13 +23,9 @@ import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { userProfileSchema, type UserProfileForm } from "@/lib/schema";
+import { createUserProfile } from "@/lib/api";
 
 type FormValue = string | string[];
-
-type SubmitProfileResponse = {
-  status: boolean;
-  message?: string;
-};
 
 const initialFormData: UserProfileForm = {
   userId: "",
@@ -137,17 +133,8 @@ export default function OnboardingWizard() {
         return;
       }
 
-      const res = await fetch("/api/user/profile", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(parseResult.data),
-      });
-
-      const result = (await res.json()) as SubmitProfileResponse;
-
-      if (result.status === true) {
+      const result = await createUserProfile(parseResult.data);
+      if (result.status) {
         router.replace("/loading");
       }
     }

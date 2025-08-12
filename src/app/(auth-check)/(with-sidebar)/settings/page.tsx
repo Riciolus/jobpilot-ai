@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { userProfileSchema, type UserProfileForm } from "@/lib/schema";
+import { getUserProfile, updateUserProfile } from "@/lib/api";
 
 const skillSuggestions = [
   "JavaScript",
@@ -99,17 +100,11 @@ export default function SettingsPage() {
   useEffect(() => {
     void (async () => {
       try {
-        const res = await fetch("/api/user/profile", { method: "GET" });
-        const data = (await res.json()) as UserProfileForm;
-
-        if (!res.ok) {
-          throw new Error();
-        }
-
+        const data = await getUserProfile();
         formDataRef.current = data;
         setFormData(data);
       } catch (err) {
-        console.error("Failed to get conversation:", err);
+        console.error(err);
       } finally {
         setIsLoading(false);
       }
@@ -163,24 +158,19 @@ export default function SettingsPage() {
         return;
       }
 
-      const res = await fetch("/api/user/profile", {
-        method: "PATCH",
-        body: JSON.stringify(parseResult.data),
-      });
-
-      if (!res.ok) {
-        setFormData(formDataRef.current);
-        setSaveStatus("error");
-        throw new Error();
-      }
-
+      await updateUserProfile(parseResult.data);
+      setFormData(formDataRef.current);
       setSaveStatus("success");
     } catch (err) {
-      console.error("Failed to update profile:", err);
+      console.error(err);
+      setSaveStatus("error");
     } finally {
       setIsEditing(false);
       setIsSaving(false);
-      setSaveStatus("idle");
+
+      setTimeout(() => {
+        setSaveStatus("idle");
+      }, 2000);
     }
   };
 

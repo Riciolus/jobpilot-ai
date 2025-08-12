@@ -34,6 +34,7 @@ import {
 } from "pdfjs-dist";
 import type { TextContent } from "pdfjs-dist/types/src/display/api";
 import { cn } from "@/lib/utils";
+import { submitResumeForReview } from "@/lib/api";
 
 // Needed to avoid CORS issues
 GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
@@ -151,23 +152,7 @@ export default function CVReviewPage() {
 
     try {
       const text = await parseCVFile(uploadedFile);
-
-      const res = await fetch("/api/resume-review", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ userCV: text }),
-      });
-
-      const modelAnalysis = (await res.json()) as {
-        status: boolean;
-        data: CVAnalysis;
-      };
-
-      if (!modelAnalysis.status) {
-        console.log("Error analysis CV");
-      }
+      const modelAnalysis = await submitResumeForReview(text);
 
       setAnalysis(modelAnalysis.data);
       setIsAnalyzing(false);
